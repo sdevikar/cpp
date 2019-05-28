@@ -1,0 +1,3 @@
+/home/swadev/workspace/personal/moderncpp/other_examples/std_arrays/build/CMakeFiles/rebuild_cache.dir
+/home/swadev/workspace/personal/moderncpp/other_examples/std_arrays/build/CMakeFiles/std_arrays.dir
+/home/swadev/workspace/personal/moderncpp/other_examples/std_arrays/build/CMakeFiles/edit_cache.dir

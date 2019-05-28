@@ -1,0 +1,3 @@
+/home/sdevikar/workspace/personal/moderncpp/other_examples/returning_a_vector/build/CMakeFiles/rebuild_cache.dir
+/home/sdevikar/workspace/personal/moderncpp/other_examples/returning_a_vector/build/CMakeFiles/returning_a_vector.dir
+/home/sdevikar/workspace/personal/moderncpp/other_examples/returning_a_vector/build/CMakeFiles/edit_cache.dir
