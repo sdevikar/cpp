@@ -65,7 +65,6 @@ struct instrumented :  instrumented_base
     return !(x < y);
   } 
 
-
 };
 
 #endif
