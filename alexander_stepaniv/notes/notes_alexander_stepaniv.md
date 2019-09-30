@@ -308,7 +308,7 @@ Here,
 
 - Imagine the template class being passed as a template parameter to some function
 - There is no provision on C++ to find out what the type of T that singleton is wrapping around
-- In this case, we might add the statement ` typedef T value_type` to singleton class. This will allow users to do something like this:
+- In this case, we might add the statement `typedef T value_type` to singleton class. This will allow users to do something like this:
 
 ```cpp
 
@@ -319,8 +319,8 @@ myFunction(MyType x)
   // this is why we need ` typedef T value_type` in singleton call
   // here, even though we don't know that singleton is consists of type T
   MyType::valueType var;
-  
-  // now you have a var which is of type T in singleton, without knowing that 
+
+  // now you have a var which is of type T in singleton, without knowing that
   // singleton was actually made of type T
 }
 ```
@@ -338,7 +338,7 @@ singleton(const singleton<U>& x) : value(x.value)
 {}
 ```
 
-- This will work, except that here, we're making an assumption that there is a conversion available from x.vale to this.value. Obviously, if this was something like this: 
+- This will work, except that here, we're making an assumption that there is a conversion available from x.vale to this.value. Obviously, if this was something like this:
 
 ```cpp
 singleton<int> first;
@@ -350,4 +350,3 @@ singleton<double> second(first);
 ```
 
 - But in general, we shouldn't allow this kind of template constructors, because one cannot guarantee what kind of template parameter is used for the singleton class that is passed as an argument to copy constructor. i.e. second.value = first.value may not be possible, because the value types are incompatible
-- 
