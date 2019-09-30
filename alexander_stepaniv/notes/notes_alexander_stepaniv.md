@@ -154,7 +154,7 @@ bool operator==(const singleton& x, const singleton& y){
 }
 ```
 
-2. Inequality: Same as above. However, there are two ways to do it:
+2.Inequality: Same as above. However, there are two ways to do it:
 
 ```cpp
 // option1: Bad option because it's independent of equality and potentially will require more code to be changed in case code change is required
@@ -183,7 +183,7 @@ bool operator!=(const singleton& x, const singleton& y){
 
 - There are 4 methods that need to be defined to make the singleton class totally ordered.
 - There are 4 methods because these methods always come in groups because we want to maintain the symmetry. i.e. if you define `<` operator, you should also define `>` operator. And if you define `<=` you should also define `>=`
-- We saw that we used == operator as a baseline for !=. Same can be done here. i.e in case of comparison, we will select `<` operator as default operator. This choice is kind of arbitrary, but not really. Because, you can expect users to be wanting to sort a group of numbers etc. in an ascending order more often than in decending order. And in sorting algorithms that will be done by using `<` comparison. i.e. if a < b, put b before a. What we mean to say here is that because Singleton needs to be a "complete" class, a STL algorithm should also be able to sort a bunch of singletons. And thus, we want to, as a starting place, start by providing an implementation for `<` operator.
+- We saw that we used == operator as a baseline for !=. Same can be done here. i.e in case of comparison, we will select `<` operator as default operator. This choice is kind of arbitrary, but not really. Because, you can expect users to be wanting to sort a group of numbers etc. in an ascending order more often than in decending order. And in sorting algorithms that will be done by using `<` comparison. i.e. if a < b, put b before a. What we mean to say here is that because Singleton needs to be a "complete" class, an STL algorithm should also be able to sort a bunch of singletons. And thus, we want to, as a starting place, start by providing an implementation for `<` operator.
 
 - So the implementation would looks like this:
 
@@ -218,7 +218,7 @@ bool operator>=(const singleton& x, const singleton& y){
 
 ### Conversion methods of Singleton
 
-- These are the methods that allow conversion from T to Singleton<T> and so on.
+- These are the methods that allow conversion from T to Singleton<T> and from Singleton<T> to T.
 - Background:
   - If there exists a class that has a constructor with a single parameter, it is possible to convert the parameter to the class and vice versa. Here's an example:
 
@@ -256,7 +256,7 @@ a = b; // conversion from int to double will happen here.
 - so, to fix this situation, there are additional set of rules that are introduced in C++. One workaround is to disable a conversion using `explicit` keyword. But then it messed up while, if and other conditionals. So an exception was made to allow implicit conversions only for these conditional cases.
 
 - **Conversion from T to singleton<T>**
-- It would need?
+- It would need
   - a constructor with a single parameter for sure
   - the parameter will be T (a const reference to it actually)
 
@@ -273,7 +273,7 @@ singleton s = x; // where x is of type T
 
 //explicit
 singleton s(x);
-```  
+```
 
 - This looks exactly the same as copy constructor. Except, copy constructor takes as it's input a reference to a singleton class and here the function is accepting a raw T value reference.
 - In order to avoid implicit creation of object using T value we should make the constructor explicit.
@@ -284,3 +284,70 @@ explicit singleton(const T& x): value(x)
 
 }
 ```
+
+- **Conversion from singleton\<T\> to T**
+
+- Background
+  - This is the inverse of what we were doing above. Here we have a singleton object made with type T. And we want to in a sense, downcast it to a raw T type.
+  - This kind of conversion is achieve with a conversion operator, `()`
+  - Conversion operator is just like any other operator overriding. i.e. it's a function and we define it as: `operator <ReturnValueType>() { // logic of conversion }`
+  - Notice that this signature a little different from the regular operator override syntax, where we do something like: `returnType operator operatorSymbol( arguments) { // conversion logic}`
+- With the above is background, we'd write a conversion operator for singleton class as below:
+
+```cpp
+explicit operator T() const { return value;}
+```
+
+Here,
+
+- `T` is the return type
+- function is marked as const, because it won't modify the argument to it. The argument to the function in this case is the Singleton class and the return type is the raw value (of type T) that is extracted from singleton class
+- explicit keyword is used to avoid and disable implicit conversion
+
+### singleton class as a template parameter
+
+- Imagine the template class being passed as a template parameter to some function
+- There is no provision on C++ to find out what the type of T that singleton is wrapping around
+- In this case, we might add the statement ` typedef T value_type` to singleton class. This will allow users to do something like this:
+
+```cpp
+
+// suppose we have a function
+template  <class MyType>
+myFunction(MyType x)
+{
+  // this is why we need ` typedef T value_type` in singleton call
+  // here, even though we don't know that singleton is consists of type T
+  MyType::valueType var;
+  
+  // now you have a var which is of type T in singleton, without knowing that 
+  // singleton was actually made of type T
+}
+```
+
+### Templatized class constructor
+
+- It is also possible to templatize class constructor. This is not recommended because of the underlying assumptions we have to make while doing this.
+- An example use case would be, for example, when you want to be able to convert a singleton<int> to singleton<float> or vice versa. This is how you would do it:
+
+```cpp
+template <classname U>
+
+// copy constructor which allows copying to/from singleton<onetype> from/to singleton<anothertype>
+singleton(const singleton<U>& x) : value(x.value)
+{}
+```
+
+- This will work, except that here, we're making an assumption that there is a conversion available from x.vale to this.value. Obviously, if this was something like this: 
+
+```cpp
+singleton<int> first;
+
+// then we do this:
+singleton<double> second(first);
+
+// and this wil work, because second.value = first.value will work just fine
+```
+
+- But in general, we shouldn't allow this kind of template constructors, because one cannot guarantee what kind of template parameter is used for the singleton class that is passed as an argument to copy constructor. i.e. second.value = first.value may not be possible, because the value types are incompatible
+- 
