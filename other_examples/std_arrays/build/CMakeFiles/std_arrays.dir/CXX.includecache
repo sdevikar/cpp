@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/swadev/workspace/personal/moderncpp/other_examples/std_arrays/main.cpp
+iostream
+-
+vector
+-
+array
+-
+printer.h
+/home/swadev/workspace/personal/moderncpp/other_examples/std_arrays/printer.h
+
+/home/swadev/workspace/personal/moderncpp/other_examples/std_arrays/printer.h
+iostream
+-
+vector
+-
+array
+-
+

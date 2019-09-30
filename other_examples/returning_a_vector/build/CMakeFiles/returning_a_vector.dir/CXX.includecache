@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/sdevikar/workspace/personal/moderncpp/other_examples/returning_a_vector/main.cpp
+iostream
+-
+vector
+-
+functional
+-
+vector_populator.h
+/home/sdevikar/workspace/personal/moderncpp/other_examples/returning_a_vector/vector_populator.h
+
+/home/sdevikar/workspace/personal/moderncpp/other_examples/returning_a_vector/vector_populator.h
+vector
+-
+
