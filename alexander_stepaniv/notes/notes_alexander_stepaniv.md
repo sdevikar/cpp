@@ -350,3 +350,77 @@ singleton<double> second(first);
 ```
 
 - But in general, we shouldn't allow this kind of template constructors, because one cannot guarantee what kind of template parameter is used for the singleton class that is passed as an argument to copy constructor. i.e. second.value = first.value may not be possible, because the value types are incompatible
+
+
+## Lecture 4 part 1
+
+- What is a component?
+  - A piece of software that lets you do something in a general way
+  - It has to be functional (i.e. ripping some lines of code out from a program and running them won't qualify those lines as components)
+  - It has to be efficient (as efficient as the logic inside the component was executed without the wrapper)
+- Is C++ the right language for component programming?
+  - There are two factors to consider
+    - Generality: You need to be able to write as generic of a program as you want
+    - Efficiency: The program needs to be efficient
+  - We will determine if these two criteria are met based on three programs:
+    - swap, min and linear search
+
+### The swap program
+
+- here's the basic code
+
+```cpp
+// it has to be generic, to lets' templatize the function
+template <typename T>
+
+// it has to be efficient, so make it inline
+// it will return nothing -- if if had to, we won't be sure what to return (a or b)
+inline void swap(T&a, T&b){
+  // tmp needs to hold a value here, so it is not a reference, unlike the arguments
+  // T tmp = a; // this is identical to T tmp(a) or tmp{a} in C++11 i.e. assignment operator here is implicitly copy constructor
+  T tmp(a)
+  a = b;
+  b = tmp;
+}
+```
+
+- Are there any requirements that type T needs to satisfy?
+  - looking at the code, we know that
+    - T has to have a working copy constructor (because we did T tmp = a)
+    - T also has to have a working assignment operator
+    - In short, T needs to be Semiregular in this case.
+
+- Post-martem of this code:
+  - Let's say we were using this function to swap containers (e.g. vectors for 1 million elements)
+  - This code is super inefficient because:
+    - we are constructing a tmp vector of a million elements, then we're copying two vectors of size 1 million twice
+  - So, this solution is very bad for contailers
+  - In case of vectors, there is a pointer to the header, there is a pointer to the position until which the vector is filled and there is a pointer to the end of the vector. So, for swapping, it's sufficient to just change the header pointer
+  - More generally, for any container, we should be good with just a couple of things:
+    - swap headers of a and b
+    - fix back pointers (i.e. if the next element points to the previous element, we will have to deal with that)
+  - Solution: write a specialized template function with specialized signature
+
+```cpp
+template <typename T>
+inline // good idea to put inline on a separate line for search convenience (i.e. search void swap instead of inline void swap)
+void swap(std::vector<T> &a, std::vector<T> &b){
+  // swap headers of a and b
+  // fix back pointers (if they exist)
+  // (we will do this later)
+}
+```
+
+### the min program
+
+```cpp
+inline
+const T& min(const T&a, const T&b){
+  if(a < b) return a;
+  else return b;
+}
+```
+
+- Notice the use of const reference here.
+  - We need args as const reference because we need the function to work for c++ literals (like swap(3,5)) (in C++ literals are converted implicitly to const integers)
+  - the return type is also const reference instead of a value to avoic copying at a calling place
