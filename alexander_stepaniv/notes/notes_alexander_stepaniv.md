@@ -390,7 +390,7 @@ inline void swap(T&a, T&b){
     - T also has to have a working assignment operator
     - In short, T needs to be Semiregular in this case.
 
-- Post-martem of this code:
+- Post-mortem of this code:
   - Let's say we were using this function to swap containers (e.g. vectors for 1 million elements)
   - This code is super inefficient because:
     - we are constructing a tmp vector of a million elements, then we're copying two vectors of size 1 million twice
@@ -400,6 +400,8 @@ inline void swap(T&a, T&b){
     - swap headers of a and b
     - fix back pointers (i.e. if the next element points to the previous element, we will have to deal with that)
   - Solution: write a specialized template function with specialized signature
+
+- More efficient code: we can use xor algorithm to swap two objects. Although the xor algorithm only works when the two objects are not identical. So, in this case, it makes sense to actually check whether the arguments are identical
 
 ```cpp
 template <typename T>
@@ -414,6 +416,8 @@ void swap(std::vector<T> &a, std::vector<T> &b){
 ### the min program
 
 ```cpp
+template <typename T>
+// T is totally ordered (i.e. < operator is defined for T)
 inline
 const T& min(const T&a, const T&b){
   if(a < b) return a;
@@ -423,4 +427,76 @@ const T& min(const T&a, const T&b){
 
 - Notice the use of const reference here.
   - We need args as const reference because we need the function to work for c++ literals (like swap(3,5)) (in C++ literals are converted implicitly to const integers)
-  - the return type is also const reference instead of a value to avoic copying at a calling place
+  - the return type is also const reference instead of a value to avoid copying at a calling place
+
+## Lecture 4 part 2
+
+### Optimizing the min program
+
+The min program discussed above works but there are subtle issues with it
+
+- There is a usability problem with returning a constant reference in min. Let's say we wanted to do something like this:
+
+  ```cpp
+  int a = 3;
+  int b = 5;
+  int x = min(a,b)
+  ```
+
+  Here we are passing a and b as references (not constant references), that will be converted to constant reference arguments and used by the function to do its job. Then a constant reference to a is returned. So, at the calling location, x is now a constant reference. And you can't do anything to mutate it.
+
+  - There is a usability problem with returning the second argument when two arguments are equal. Let's discuss that later, but for now, change the code to below
+
+  ```cpp
+  template <typename T>
+  // requires T is totally ordered (i.e. < operator is defined for T)
+  inline
+  const T& min(const T&a, const T&b){
+    if(b < a) return b; // i.e. b is returned ONLY when it is less than a. Otherwise, the first argument is returned
+    else return a;
+  }
+  ```
+
+- Let's revisit some concepts
+  - Transitivity: This says is a < b &  b < c then a must be less than c
+  - Trichotamy: If a and b are two totally ordered objects of the same type, then one of the following is definitely true:
+    - a < b
+    - b < a
+    - a == b
+  - Weakly ordered: Trichotamy can hold a different meaning for complex datastructures. For example, if we have structures with first name and last name to sort, we may choose to sort them by last name let's say. What we did was determine what's less than the other type based on one individual element. But that doesn't mean that the entire structure is less than the other and so on. i.e. two people with same first and last name are not equal. But we will consider them as **equivalent**s. So, for the weakly ordered objects (like structures), the following is true:
+    - a < b
+    - b < a
+    - a and b are equivalent but not equal
+
+- So with this equivalence in mind, let's fix the min function to work for the weakly ordered types as well. In this case, we will need to know how to compare these types
+
+```cpp
+  template <typename T, typename Compare>
+  // requires Compare defines a StrictWeakOrdering on T
+  inline
+  const T& min(const T&a, const T&b, Compare cmp){
+    if(cmp(b,a)) return b; // i.e. b is returned ONLY when it is less than a. Otherwise, the first argument is returned
+    else return a;
+  }
+  ```
+
+### More on the equality
+
+- programmers make reasolable assumptions on how equality should work. i.e. if we write something like this
+
+```cpp
+std::cout << a == a ? "yes" : "no" << std::endl
+```
+
+We expect the output of the program to be "yes".
+
+- However, as we will find out, for invalid floating point numbers, equality doesn't hold true. So, for example, if we did this:
+
+```cpp
+double a(0.0/0.0);
+std::cout << a == a ? "yes" : "no" << std::endl
+```
+
+the output here will be "no".
+
+We have two ways to go about this. One, we break the laws around the logic. (i.e. accept that this is an exception) or two, we can make sure that these exceptional situations are taken care of (by adding special cases?)
