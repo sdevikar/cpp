@@ -500,3 +500,36 @@ std::cout << a == a ? "yes" : "no" << std::endl
 the output here will be "no".
 
 We have two ways to go about this. One, we break the laws around the logic. (i.e. accept that this is an exception) or two, we can make sure that these exceptional situations are taken care of (by adding special cases?)
+
+## Lecture 5 part 1
+
+### More on the min function
+
+- In the previous lecture we passed a comparator parameter to the min function.
+However, for totally ordered types, which support `\<` parameter, it's not convenient to always pass comparator.
+It should be the default instead. So, we need to figure out a way to call `min` without the additional comparator parameter. Maybe we can use the specialized template function for this.
+
+- In other words, we want to be able to do
+
+```cpp
+// invoke min with a comparator
+min<int, std::less<int> >
+
+// invoke min without comparator
+min<int>
+```
+
+Here, `std::less<T>` is a functor. i.e. a function object for performing comparisons. Unless specialized, invokes operator< on type T.
+
+- So lets write a specialized min function for totally ordered types that support < operator
+
+```cpp
+  template <typename T>
+  // requires T to be totally ordered
+  inline
+  const T& min(const T&a, const T&b){
+    return min(a,b,std::less<T>());
+  }
+  ```
+
+  - notice how we reused the original min function here. In general, it's a good idea to not rewrite the same logic. In this particular case, there is no overhead, because functions are inline
