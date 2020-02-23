@@ -585,3 +585,5 @@ In the call `std::sort(my_data.begin(), my_data.end(), std::less<int>())`, the `
 Once again, it's not a function pointer. But a functor object. The advantage of doing things this way, is that it allows us to call templated algorithm functions, such as `std::sort` or the one we defined above: `const T& min(const T&a, const T&b, Compare cmp)`
 
 The interesting thing here, is because for dataypes like `int`, the `min` function is just `<`. So the `std::less<int>` will get inlined.
+
+This is a little different from passing a function pointer. If we had passed a function pointer, a function will be called (and not linlined). For the operator(), the () call will be inlined and the entire less that operator would be just calling `a < b`
