@@ -351,7 +351,6 @@ singleton<double> second(first);
 
 - But in general, we shouldn't allow this kind of template constructors, because one cannot guarantee what kind of template parameter is used for the singleton class that is passed as an argument to copy constructor. i.e. second.value = first.value may not be possible, because the value types are incompatible
 
-
 ## Lecture 4 part 1
 
 - What is a component?
@@ -370,7 +369,7 @@ singleton<double> second(first);
 - here's the basic code
 
 ```cpp
-// it has to be generic, to lets' templatize the function
+// it has to be generic, so lets' templatize the function
 template <typename T>
 
 // it has to be efficient, so make it inline
@@ -532,4 +531,57 @@ Here, `std::less<T>` is a functor. i.e. a function object for performing compari
   }
   ```
 
-  - notice how we reused the original min function here. In general, it's a good idea to not rewrite the same logic. In this particular case, there is no overhead, because functions are inline
+- notice how we reused the original min function here. In general, it's a good idea to not rewrite the same logic. In this particular case, there is no overhead, because functions are inline
+
+### Function call vs Functors
+
+In the quest to make our code as fast as possible, we want to:
+
+- a. avoid function calls
+- b. make sure that the code gets inlined
+
+Note the original (unspecialized) definition of min
+
+```cpp
+const T& min(const T&a, const T&b, Compare cmp)
+```
+
+Here, typename T is a type, like int, double etc. Compare is also a type i.e. a class of some sort, which will let us perform some sort of ordering on two arguments.
+Notice that this Compare is not a function pointer but a class type. It could have been a function pointer that takes two arguments. But there are reasons why we chose a class type instead of a function pointer.
+The point of this is to avoid an expensive function call.
+
+Now, let's look at the second (specilized) definition on `min`. This is returning `min(a,b,std::less<T>());`.
+Here, the last argument to unspecialized min is an object of `std::less`.
+
+Let's try to write this `std::less` class.
+
+```cpp
+template<typename T>
+
+// requires T to be totally ordered
+struct less<T>{
+
+  bool operator()(const T& a, const T& b) const{
+    return a < b;
+  }
+}
+
+// And then we can use it like this
+// std::vector<int> my_data;
+// ... fill in the my_data here
+
+//std::sort(my_data.begin(), my_data.end(), std::less<int>())
+```
+
+There are several things to notice here:
+
+1. This will work for totally ordered datatype because it supports < operator
+2. we're overridding () operator, essentially making the class `less` a functor. i.e. operator () can be invoked on its instance
+3. operator() accepts two const reference argumenets, because we don't intend to modify the arguments nor we want to copy them by passing by value instead
+4. operator() override is a const function. i.e. it won't allow for any members of class `less`, which is obvious, because there are no members in the class. This class is purely a functor
+
+In the call `std::sort(my_data.begin(), my_data.end(), std::less<int>())`, the `std::less<int>` is a type. And we're making an empty object of it using the `()` operator. i.e. `std::less<int>()` is an empty object.
+
+Once again, it's not a function pointer. But a functor object. The advantage of doing things this way, is that it allows us to call templated algorithm functions, such as `std::sort` or the one we defined above: `const T& min(const T&a, const T&b, Compare cmp)`
+
+The interesting thing here, is because for dataypes like `int`, the `min` function is just `<`. So the `std::less<int>` will get inlined.
