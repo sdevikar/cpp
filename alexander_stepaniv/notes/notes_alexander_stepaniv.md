@@ -384,12 +384,14 @@ inline void swap(T&a, T&b){
 ```
 
 - Are there any requirements that type T needs to satisfy?
+
   - looking at the code, we know that
     - T has to have a working copy constructor (because we did T tmp = a)
     - T also has to have a working assignment operator
     - In short, T needs to be Semiregular in this case.
 
 - Post-mortem of this code:
+
   - Let's say we were using this function to swap containers (e.g. vectors for 1 million elements)
   - This code is super inefficient because:
     - we are constructing a tmp vector of a million elements, then we're copying two vectors of size 1 million twice
@@ -412,7 +414,7 @@ void swap(std::vector<T> &a, std::vector<T> &b){
 }
 ```
 
-### the min program
+### the min function
 
 ```cpp
 template <typename T>
@@ -457,7 +459,8 @@ The min program discussed above works but there are subtle issues with it
   ```
 
 - Let's revisit some concepts
-  - Transitivity: This says is a < b &  b < c then a must be less than c
+
+  - Transitivity: This says is a < b & b < c then a must be less than c
   - Trichotamy: If a and b are two totally ordered objects of the same type, then one of the following is definitely true:
     - a < b
     - b < a
@@ -477,7 +480,7 @@ The min program discussed above works but there are subtle issues with it
     if(cmp(b,a)) return b; // i.e. b is returned ONLY when it is less than a. Otherwise, the first argument is returned
     else return a;
   }
-  ```
+```
 
 ### More on the equality
 
@@ -505,8 +508,8 @@ We have two ways to go about this. One, we break the laws around the logic. (i.e
 ### More on the min function
 
 - In the previous lecture we passed a comparator parameter to the min function.
-However, for totally ordered types, which support `\<` parameter, it's not convenient to always pass comparator.
-It should be the default instead. So, we need to figure out a way to call `min` without the additional comparator parameter. Maybe we can use the specialized template function for this.
+  However, for totally ordered types, which support `\<` parameter, it's not convenient to always pass comparator.
+  It should be the default instead. So, we need to figure out a way to call `min` without the additional comparator parameter. Maybe we can use the specialized template function for this.
 
 - In other words, we want to be able to do
 
@@ -529,7 +532,7 @@ Here, `std::less<T>` is a functor. i.e. a function object for performing compari
   const T& min(const T&a, const T&b){
     return min(a,b,std::less<T>());
   }
-  ```
+```
 
 - notice how we reused the original min function here. In general, it's a good idea to not rewrite the same logic. In this particular case, there is no overhead, because functions are inline
 
@@ -587,3 +590,95 @@ Once again, it's not a function pointer. But a functor object. The advantage of 
 The interesting thing here, is because for dataypes like `int`, the `min` function is just `<`. So the `std::less<int>` will get inlined.
 
 This is a little different from passing a function pointer. If we had passed a function pointer, a function will be called (and not linlined). For the operator(), the () call will be inlined and the entire less that operator would be just calling `a < b`
+
+### the max function
+
+We could write the max function the same way as we wrote the min function. i.e. using the Comparator functor.
+However, let's dig a little deeper. The idea is that the min, max and sort should work in harmony.
+Let's explore how the we would write a sort function to sort two items. This sort function will simply swap the items if they're out of order, so a always has the min value and b has the "max" value
+
+```cpp
+
+template <typename T, typename Compare>
+// T is StrictWeakOrdering
+inline
+void sort2(const T& a, const T& b, Compare cmp)
+{
+  // cmp can be std::less, for example
+  // so the logic is, if b is less than a, swap a and b
+  // otherwise, do nothing
+  if(cmp(b,a)) // checking b < a will make sure that a and b don't get swapped when b == a
+  {
+    std::swap(a,b)
+  }
+}
+```
+
+After this sort is done, a will contain min and b will contain max.
+
+In the above implementation, if a and b are equivalent, no swap will happen and the sort will have no effect. This is the right thing to do.
+Now, let's say we write a max function now. If we implement the max function the same way as min and use `>` instead of `<`, for example and we call min and max on a and b that are equivalent, they both will have the same effect. i.e. the output of `min` and `max` will have the exact same output. Whereas, in principle, they should have the opposite output.
+So, let's write the max function so that it has the opposite output of min.
+
+```cpp
+template <typename T, typename Compare>
+
+// T is StrictWeakOrdering
+
+const T& max(T& a, T&b, Compare cmp)
+{
+  if(cmp(b,a)){ //cmp(a,b) will mean that a is less than b (i.e. b is either equal or greater than a)
+    return a;
+  }
+  return b;
+}
+```
+
+We can then similarly write a specialized templated function for totally ordered types as we did for min
+
+### Find minimum element from a range
+
+So far we have written a min program that operates on two elements. Let's expand on this and write a min program that returns minimum element from a range. This range could be a vector, for example.
+For reference, see the `std::min_element` function.
+
+- What should this function take as an input?
+  - It should take a "range". The range implies a begining and an end
+  - Therefore, the function should take the begin and the end of an iterator
+
+- What should this function return?
+  - We could return the element itself. But if we do that, we will only know what the element is. That means
+    - We can't delete that element from the range
+    - We can't know what's after it or before it
+    - There's a dilemma of what to return when the range is actually empty
+
+Here's what the code should look like:
+
+```cpp
+template <typename I, typename Compare>
+
+// requires I is ForwardIterator (reason in the explanation below)
+I min_element(I begin, I end, Compare cmp)
+{
+  if(first == last) return last; // or first (i.e. get rid of the empty range case)
+  I min = first; // save first element as min temporarily
+
+  // now iterate over the entire range and update min
+
+  ++first; // since we already know that first is not last, we only have to iterate over n-1 elements
+
+  while(first != last){
+    if(cmp(*first, *min)){ // i.e. if the current first is less than min
+        min = first;
+    }
+    ++first;
+  }
+
+  return min; // so basically we're incrementing the iterator and recording the position of min element then returning it
+}
+```
+
+- In the above algorithm, we are saving the value of iterator `I min = first` and also returning the iterator. This means, the iterator should be "alive" at the time of usage. This requires the iterator to be **forward iterator** as against input iterator
+- Input iterators are temporary iterators, which when iterated over, are invalid.
+
+- How would we implement the max?
+  - We can just do `!cmp(*first, *min)`
