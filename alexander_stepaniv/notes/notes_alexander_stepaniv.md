@@ -657,6 +657,7 @@ Here's what the code should look like:
 template <typename I, typename Compare>
 
 // requires I is ForwardIterator (reason in the explanation below)
+// and Compare is StrictWeakOrdering on ValueType(I)
 I min_element(I begin, I end, Compare cmp)
 {
   if(first == last) return last; // or first (i.e. get rid of the empty range case)
@@ -682,3 +683,113 @@ I min_element(I begin, I end, Compare cmp)
 
 - How would we implement the max?
   - We can just do `!cmp(*first, *min)`
+
+## Lecture 5 part 2
+
+### minmax element algorithm
+
+- In the above examples of minimum and maximum, the number of comparisons we had to make were (n-1)
+- What if we needed to find min and max both at the same time? Turns out there is a more efficient algorithm for that
+- The idea is that we take two elements into consideration and find the min and max between the two, then do the same for next two elements while keeping a running min and max.
+
+```cpp
+// let's say there are 6 elements
+3,2,5,1,0,4
+// step0: init_min, init_max
+// step1: input = 3,2 => cur_min=2, cur_max=3. min=2, max=3. #of comparisons=3 (1 for cur_min with cur_max, 2 for cur_ with init_)
+// step2: input = 5,1 => cur_min=1, cur_max=5. min=1, max=5. #of comparisons=3 (1 for cur_min with cur_max, 2 for cur_ with global min/max)
+// step3: input = 0,4 => cur_min=0, cur_max=4. min=0, max=5. #of comparisons=3
+
+// total # of comparisons = 9 (i.e. 3n/2)
+```
+
+Let's talk aboout the function now. Let's call it `minmax_element`.
+
+- what are the arguments to it?
+  - Same as min and max. i.e. a range represented by the being and end iterator. And also a comparison functor
+- what are the prerequisites on the inputs to the function
+  - Same as before. i.e. the iterator has to be Forward iterator and compare functor is required to have StrictWeakOrdering on Valuetype(I), where I is the iterator
+- What is the return value of the function?
+  - The function is supposed to return two iterators pointing to the positions of min and max elements
+  - So, let's return a pair of iterators
+
+```cpp
+// Requires I is ForwardIterator
+// Compare is a StrictWeakOrdering on ValueType(I)
+template <typename I, typename Compare>
+std::pair<I, I> minmax_element(I first, I last, Compare cmp)
+{
+  // corner case - empty range
+  if(begin == end) return std::make_pair(last, last);
+
+  // now we have at least one element
+  I min_el = first;
+  I max_el = ++first; // at this point, this could be end, so we need to check for that in the next line
+
+  if(first == last) return std::make_pair(min_el, max_el); // i.e. this is a one element range and min and max are the same
+
+  if(!(cmp(*min_el, *max_el))) std::swap(min_el, max_el);
+
+  I global_min_el = min_el;
+  I global_max_el = max_el;
+
+  while(...)
+  {  
+    if(cmp(*min_el, *global_min_el)){
+      global_min_el = min_el;
+    }
+
+    if(cmp(*max_el, *global_max_el)){
+      global_max_el = max_el;
+    }
+
+    min_el += 2;
+    max_el += 2;
+
+  }
+
+}
+```
+
+the above code is incomplete. It needs to deal with the situation when there is only one element left at the end
+
+### Finding min and a second min
+
+We will now discuss a problem where we want to find the first min as usual but we also want to find the second min.
+
+#### Run time considerations
+
+We want to find an optimal way to find the second min, preferably with a logarithmic order of comparisons.
+
+- What we know
+  - We know that no matter what, finding the min will require n-1 comparisons. That won't change
+  - We also can easily see that the second min will be the guy who loses only against the min and no one else.
+
+- Let's say we have 6 numbers and we want to find the min and next min. Let's represent the winners with W and losers with an L in the figure below:
+
+```none
+              W1
+      W1              W3
+  W1      W2      W3      W4
+W1,L1   W2,L2   W3,L3   W4,L4
+```
+
+In the above tree, we're pairing two numbers. One of them "wins" the min comparison and advances to a level above. There are total 8 elements. And the depth of tree is 3. i.e. 2^3.
+If there were 7 elements, the depth of the tree would still be 3. Hence, in general, the depth of the tree is ceiling of ln(n). i.e. log base 2 of n
+
+- The idea is to find the minimum (ultimate winner) with n-1 comparisons and then arrange the elements in a binary tree, so that there are logarithmic number of comparisons. To be exact, `ceiling(ln(n)) - 1` comparisons.
+- So, overall, we want to be able to do it in `(n - 1) + ceiling(ln n) - 1 = n + ceiling(ln n) - 2` comparisons
+
+#### Space considerations
+
+- Because we need to know the second minimum and we know that the second minimum could've only lost against the absolute minimum, we somehow need to store a history. (How we would do it is a different story altogether. Let's save that for later)
+- Also, observe that we don't technically need to save a lot of history. In the tree above, when we're done comparing W1,L1, we're ready to go a level above and discard W1 and L1.
+- If we can't do all the comparisons "in-place", a logarithmic storage is acceptable. In practise, the logarithmic storage would not exceed 64.
+
+### Data structures
+
+Let's first discuss what we're going to compare. This is where the concept of parities comes into picture. The idea is that, we want to be comparing (i.e. create a match-up of) numbers of the same level/weight.
+So, let's say we took an array (of some data strucute) of length 32, at 0th index, we'd put all the numbers that won 0 time, at index 1, we'd put numbers that won 1 times and so on.
+In order to put those numbers there, we'd need to figure out how to "combine" these numbers. So, we will need a combine function.
+
+### 
