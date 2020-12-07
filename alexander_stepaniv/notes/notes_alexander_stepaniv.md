@@ -595,7 +595,7 @@ This is a little different from passing a function pointer. If we had passed a f
 
 We could write the max function the same way as we wrote the min function. i.e. using the Comparator functor.
 However, let's dig a little deeper. The idea is that the min, max and sort should work in harmony.
-Let's explore how the we would write a sort function to sort two items. This sort function will simply swap the items if they're out of order, so a always has the min value and b has the "max" value
+Let's explore how we would write a sort function to sort two items. This sort function will simply swap the items if they're out of order, so `a` always has the min value and `b` has the "max" value
 
 ```cpp
 
@@ -646,7 +646,7 @@ For reference, see the `std::min_element` function.
   - Therefore, the function should take the begin and the end of an iterator
 
 - What should this function return?
-  - We could return the element itself. But if we do that, we will only know what the element is. That means
+  - We could return the element itself. But if we do that, we will only know what the element is. That means:
     - We can't delete that element from the range
     - We can't know what's after it or before it
     - There's a dilemma of what to return when the range is actually empty
@@ -753,43 +753,63 @@ std::pair<I, I> minmax_element(I first, I last, Compare cmp)
 
 the above code is incomplete. It needs to deal with the situation when there is only one element left at the end
 
+## Lecture 6 part 1
+
 ### Finding min and a second min
 
 We will now discuss a problem where we want to find the first min as usual but we also want to find the second min.
 
 #### Run time considerations
 
-We want to find an optimal way to find the second min, preferably with a logarithmic order of comparisons.
+We know that in order to find min, we will need `n-1` comparisons (as discussed in previous lectures).
 
-- What we know
-  - We know that no matter what, finding the min will require n-1 comparisons. That won't change
-  - We also can easily see that the second min will be the guy who loses only against the min and no one else.
+The idea of finding the second min stems from the player seedings in tennis tournaments. In order for tournament to be fair, it is important that the final game is played between the two strongest players.
+At the same time, not everyone can play with everyone. So the games are arranged in a binary tree. See this example:
+![Elimination Bracket](images/brackets.png)
 
-- Let's say we have 6 numbers and we want to find the min and next min. Let's represent the winners with W and losers with an L in the figure below:
+Here, the winner had to win 4 matches. i.e. $\lceil ln(n) \rceil$ (ceiling on log base 2 n) matches and beat $\lceil ln(n) \rceil$ players, where n is 16 in this case.
+It is also obvious that the seed#2 player had to win $\lceil ln(n)-1 \rceil$ matches and that seed#2 lost ONLY one match and that was against seed#1.
 
-```none
-              W1
-      W1              W3
-  W1      W2      W3      W4
-W1,L1   W2,L2   W3,L3   W4,L4
-```
+What this means is:
 
-In the above tree, we're pairing two numbers. One of them "wins" the min comparison and advances to a level above. There are total 8 elements. And the depth of tree is 3. i.e. 2^3.
-If there were 7 elements, the depth of the tree would still be 3. Hence, in general, the depth of the tree is ceiling of ln(n). i.e. log base 2 of n
+- the winner of the tournament (seed #1 and our min) will not have lost any matches
+- the runner up (our second min) will have lost only one match (i.e. the final match) and only against the winner (our min)
 
-- The idea is to find the minimum (ultimate winner) with n-1 comparisons and then arrange the elements in a binary tree, so that there are logarithmic number of comparisons. To be exact, `ceiling(ln(n)) - 1` comparisons.
-- So, overall, we want to be able to do it in `(n - 1) + ceiling(ln n) - 1 = n + ceiling(ln n) - 2` comparisons
+So once the winner is decided, we want to find the second winner for the remaining subset i.e. `n-1`.
+We know that the winner had to win $\lceil ln(n) \rceil$ matches for n players. So, the runner up will have to now win $\lceil ln(n)-1\rceil$ matches.
+
+Putting all of this together, we need:
+`n-1` comparisions to find the min + `ln(n) - 1` comparisons to find the second minimum = total of `n + ln(n) - 2` comparisons.
+
+#### Why can you find a second min with logarithmic number of comparisons but not the first min?
+
+This because we already know an important property that seed#2 loses only 1 game and only against the seed#1
+
+- So, if seed#2 loses only and only 1 game, only seed#2 can make it to the rightmost but one position to matchup with seed#1 for finals
+- And this is where the seed#2 will lose to seed#1.
 
 #### Space considerations
 
-- Because we need to know the second minimum and we know that the second minimum could've only lost against the absolute minimum, we somehow need to store a history. (How we would do it is a different story altogether. Let's save that for later)
-- Also, observe that we don't technically need to save a lot of history. In the tree above, when we're done comparing W1,L1, we're ready to go a level above and discard W1 and L1.
-- If we can't do all the comparisons "in-place", a logarithmic storage is acceptable. In practise, the logarithmic storage would not exceed 64.
+There are two steps to this alorithms.
+
+1. Finding the min and we already know how much space we need for it
+2. Finding the second min in logarithmic time. As we discussed above, we need history for this. And this history is the part where we could potentially use lots of space. But, observe that we don't technically need to save a lot of history. In the tree above, when we're done comparing two seeds we're ready to go a level to the right and discard the history
+
+If we can't do all the comparisons "in-place", a logarithmic storage is acceptable. In practise, the logarithmic storage would not exceed 64.
+
+In order to find second minimum in logarithmic time, we need to transform a linear sequence into a binary tree. It's important to understand that we can do this rearrangement because this group of numbers is associative. i.e. you can regroup them as you wish, but at the end, the result will still be the same. e.g. you can find a min between (1,4) and (3,6) and then between (1,3). Or you can find a min between (1,3) and (4,6) and then between (1,4), the end result will still be the same, i.e. 1.
 
 ### Data structures
 
 Let's first discuss what we're going to compare. This is where the concept of parities comes into picture. The idea is that, we want to be comparing (i.e. create a match-up of) numbers of the same level/weight.
-So, let's say we took an array (of some data strucute) of length 32, at 0th index, we'd put all the numbers that won 0 time, at index 1, we'd put numbers that won 1 times and so on.
+The idea is this:
+
+- take  array of booleans of length 32 initialized to all 0s at all indexes. The 0 at index m represent that no one has won m number of games. (i.e. 0 at index 5 will mean, nobody has won 5 games)
+- take the first number, it has won 0 games so far, so "combine" it with 0th index and leave it there for a while
+- take the next number. This will have won 0 games as well, so "combine" it with the number at 0th index
+- Whoever won the above matchup, will have won 1 game now. And now it should be carry propogated to index 1
+
 In order to put those numbers there, we'd need to figure out how to "combine" these numbers. So, we will need a combine function.
 
 ### 
+
