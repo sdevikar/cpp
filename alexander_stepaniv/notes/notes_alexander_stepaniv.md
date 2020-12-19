@@ -642,6 +642,7 @@ So far we have written a min program that operates on two elements. Let's expand
 For reference, see the `std::min_element` function.
 
 - What should this function take as an input?
+
   - It should take a "range". The range implies a begining and an end
   - Therefore, the function should take the begin and the end of an iterator
 
@@ -734,7 +735,7 @@ std::pair<I, I> minmax_element(I first, I last, Compare cmp)
   I global_max_el = max_el;
 
   while(...)
-  {  
+  {
     if(cmp(*min_el, *global_min_el)){
       global_min_el = min_el;
     }
@@ -804,12 +805,113 @@ In order to find second minimum in logarithmic time, we need to transform a line
 Let's first discuss what we're going to compare. This is where the concept of parities comes into picture. The idea is that, we want to be comparing (i.e. create a match-up of) numbers of the same level/weight.
 The idea is this:
 
-- take  array of booleans of length 32 initialized to all 0s at all indexes. The 0 at index m represent that no one has won m number of games. (i.e. 0 at index 5 will mean, nobody has won 5 games)
-- take the first number, it has won 0 games so far, so "combine" it with 0th index and leave it there for a while
+- take array of booleans of length 32 initialized to all 0s at all indexes. The 0 at index m represent that no one has won m number of games. (i.e. 0 at index 5 will mean, nobody has won 5 games)
+- take the first number, it has won 0 games so far, so "combine" it with 0th index, propogate the carry, and leave it there for a while
 - take the next number. This will have won 0 games as well, so "combine" it with the number at 0th index
 - Whoever won the above matchup, will have won 1 game now. And now it should be carry propogated to index 1
 
 In order to put those numbers there, we'd need to figure out how to "combine" these numbers. So, we will need a combine function.
 
-### 
+For example, we'll take the sequence [11, 10, 19, 13, 18, 4, 15].
+This is an array of size 7. So, we will need a counter of size $\lceil ln(n7) \rceil$ = 3
 
+| Value | counter[0] | counter[1] | counter[2] | function returns |
+| ----- | ---------- | ---------- | ---------- | ---------------- |
+| Init  | 0          | 0          | 0          | -                |
+| 11    | 11         | 0          | 0          | 0                |
+| 10    | 0          | 21         | 0          | 21               |
+| 19    | 19         | 21         | 0          | 0                |
+| 13    | 0          | 0          | 53         | 53               |
+| 18    | 18         | 0          | 53         | 0                |
+| 4     | 0          | 22         | 53         | 22               |
+| 15    | 15         | 22         | 53         | 0                |
+
+In the above table, if we look at the non zero numbers in the counter[2..1] as 1's, then at each step, we have the number of elements inserted in the counter.
+This is because we implemented the combine operation similar to binary addition. i.e. 0+1 =1, 1+1 = 1,0
+So, in our case, all we've done is, 11 + 10 = 21,0
+
+#### Second min code
+
+Let's think about the data structure later. Let's start with something very basic i.e. the combine function. What we know about it so far is:
+
+- it is a binary operation (i.e. it operates on two operands)
+- it will operate on a data type of the elements in the array (let's call it T)
+- it needs to continuously give the feedback to the caller as to whether we were able to put the number in a particular position or not. And we know that the datastructure to keep track of this contains either all 0s or the element of type T who has won x number of matches, where x = index. So return type will be T
+
+So, below we have
+
+- typename T: This is the datatype of the elements
+- typename I: This is for the iterator that iterates over a collection of items of type T
+- typename Op: This is the binary operator type itself
+
+##### Combine operation (add_to_counter)
+
+```cpp
+// The combine operation
+
+template <typename T, typename I, typename Op>
+
+// requires Op is BinaryOperation(T)
+// and Op is associative
+// I is forward iterator and ValueType(I) = T
+
+T add_to_counter(I first, I last, Op op, const T &zero, T carry)
+{
+  // precondition: carry != zero
+  while (first != last)
+  {
+    if(*first == zero)
+    {
+      *first = carry;
+      return zero;
+    }
+      carry = op(*first, carry);
+      *first = zero;
+      ++first;
+  }
+
+  return carry;
+}
+```
+
+In the code above:
+
+- the argument `zero` is just some marker of "emptiness". For example, NULL. So that, we can compare the value at a position with it and see if it's empty.
+- notice that carry is pass by value - this is because we want to modify it
+- in the combining operation `op` \*first and carry arguments' order matters because `op` is not a commutitive operation. And we've chosen to pass first as the first argument because it was already to the left of carry (I didn't understand this part)
+- we have done `*first=zero` at line 848. This is because in binary operations, 1+1 = 10, i.e. 0 with carry 1. We also want to keep this counter as clean as possible and keep the bit array balanced. Balancing is important because we're trying to fit n elements in log(n) size bit array.
+
+###### reduce_counter
+
+Now that we have an algorithm for adding things to counter, we can start thinking about the higher level algorithm to take things one by one and reduce the counter.
+
+```cpp
+template <typename T, typename I, typename Op>
+
+// requires Op is BinaryOperation(T)
+// and Op is associative
+// I is forward iterator and ValueType(I) = T
+
+T reduce_counter(I first, I last, Op op, const T &zero){
+  // keep going until we find the first non zero element
+  while(first != last && *first == zero){
+    ++first;
+  }
+  //we may have exited the last loop because if first == last
+  if(first == last){return zero;}
+
+  // store the first non zero element
+  T result = *first;
+
+  // then iterate
+  //(now we're iterating from the first non zero element to the end)
+  while(++first != last){
+    if(*first != zero){
+      // update the result
+      result = op(*first, result);
+    }
+  }
+
+  return result;
+}
+```
