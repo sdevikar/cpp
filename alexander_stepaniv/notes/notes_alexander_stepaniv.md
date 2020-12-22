@@ -766,6 +766,7 @@ We know that in order to find min, we will need `n-1` comparisons (as discussed 
 
 The idea of finding the second min stems from the player seedings in tennis tournaments. In order for tournament to be fair, it is important that the final game is played between the two strongest players.
 At the same time, not everyone can play with everyone. So the games are arranged in a binary tree. See this example:
+
 ![Elimination Bracket](images/brackets.png)
 
 Here, the winner had to win 4 matches. i.e. $\lceil ln(n) \rceil$ (ceiling on log base 2 n) matches and beat $\lceil ln(n) \rceil$ players, where n is 16 in this case.
@@ -813,18 +814,23 @@ The idea is this:
 In order to put those numbers there, we'd need to figure out how to "combine" these numbers. So, we will need a combine function.
 
 For example, we'll take the sequence [11, 10, 19, 13, 18, 4, 15].
-This is an array of size 7. So, we will need a counter of size $\lceil ln(n7) \rceil$ = 3
+This is an array of size 7. So, we will need a counter of size $\lceil ln(7) \rceil$ = 3
 
-| Value | counter[0] | counter[1] | counter[2] | function returns |
-| ----- | ---------- | ---------- | ---------- | ---------------- |
-| Init  | 0          | 0          | 0          | -                |
-| 11    | 11         | 0          | 0          | 0                |
-| 10    | 0          | 21         | 0          | 21               |
-| 19    | 19         | 21         | 0          | 0                |
-| 13    | 0          | 0          | 53         | 53               |
-| 18    | 18         | 0          | 53         | 0                |
-| 4     | 0          | 22         | 53         | 22               |
-| 15    | 15         | 22         | 53         | 0                |
+| Value | counter[0] | counter[1] | counter[2] | function returns | comment                         |
+| ----- | ---------- | ---------- | ---------- | ---------------- |----------------------------------
+| Init  | 0          | 0          | 0          | -                | counter = 0                     |
+| 11    | 11         | 0          | 0          | 0                | counter = 001 i.e. 00`0+11`     |
+| 10    | 0          | 21         | 0          | 21               | counter = 010 i.e. 0`11+10`0    |
+| 19    | 19         | 21         | 0          | 0                | counter = 011 i.e. 0`21``0+19`  |
+| 13    | 0          | 0          | 53         | 53               | counter = 100 i.e. `19+21+13`00 |
+| 18    | 18         | 0          | 53         | 0                | counter = 101 i.e.`53`0`0+18`   |
+| 4     | 0          | 22         | 53         | 22               | counter = 110 i.e. `53``18+4`0  |
+| 15    | 15         | 22         | 53         | 0                | counter = 111 i.e. `53``22``0+15` |
+
+The above table shows how this counter is implemented using binary carry propogation style.
+We have replicated counting up from 000 to 111. In each step, we're 
+- working in an element from the sequence
+- and performing combine operation (for simplicity, we've shown addition) and this is done in such a way that the counter looks like a binary number. This will allow us to represent the number of elements in the sequence that the counter has combined. e.g. `0` `21` `0` looks like `010`, i.e. the second bit set and hence representing the fact that two numbers are combined. 
 
 In the above table, if we look at the non zero numbers in the counter[2..1] as 1's, then at each step, we have the number of elements inserted in the counter.
 This is because we implemented the combine operation similar to binary addition. i.e. 0+1 =1, 1+1 = 1,0
@@ -915,3 +921,48 @@ T reduce_counter(I first, I last, Op op, const T &zero){
   return result;
 }
 ```
+
+## Lecture 7
+
+In lecture 6 part 1 and 2, we wrote two algorithms to add values of type T to a special counter and reduce the counter.
+We're going to put these two algorithms into an object now.
+
+- In `alexander_stepaniv/homework/balanced_reduction/test_binary_counter.cpp`, in order to execute `add_to_counter`, we had to iterate over all the values in a for loop and pass the value as an argument to `add_to_counter`. That is, we outsourced the need for maintaining the "state". In order to move this algorithm within an object, we can maintain an internal state.
+- The other thing that is not going to change throughout the execution, is the value of zero. So, it can also be "fixed" and internalized
+- The operation is also the same throughout the execution, so, that could be fixed as well
+
+We have a choice to use a class or a struct to embed the algorithm into an object. But in this case, since the class should actually have a private state (to iterate over the values), we will use class instead of a struct
+
+```cpp
+
+template <typename T, typename Op>
+class binary_counter
+{
+  private:
+    std::vector<T> counter;
+    Op op;
+    T zero;
+
+  public:
+  // contructor
+  // order of arguments to the constructor is important
+  // because we could potentially "default" the zero to 0 or something
+  binary_counter(const Op& op, const T& zero): op(op), zero(zero){}
+
+  // no need to return anything
+  // return type is void because:
+  // return carry was only supposed to happen when the counter runs out of space
+  // also no need to pass iterators or op and zero, since they're internal to the class
+
+  void add(T x){
+      add_to_counter(counter.begin(), counter.end(), zero, x);
+      if(x!=0)  counter.push_back(x);
+  }
+
+  T reduce(){
+      return reduce_counter(counter.begin(), counter.end(), op, zero);
+    }
+```
+
+- In passing the arguments to the constructor, there are two conflicting conventions. The standard convention says, that the arguments should be passed by const reference. And the second convention says, the functors (function objects) throughout STL are passe by value (because they're very cheap). In case of such a conflict, always use the more standard and general convention. Hence, the arguments to the constructor are pass by const reference.
+- We also used the initializer list for initialization of `op` and `zero`. Doing `op(op)` is better than `op=x` in the constructor code, because `op=x` is equivalent to `op(); op=x;`. So, we're going to save an operation with initializer list.
