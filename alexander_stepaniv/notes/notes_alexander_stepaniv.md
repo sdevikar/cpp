@@ -915,3 +915,48 @@ T reduce_counter(I first, I last, Op op, const T &zero){
   return result;
 }
 ```
+
+## Lecture 7
+
+In lecture 6 part 1 and 2, we wrote two algorithms to add values of type T to a special counter and reduce the counter.
+We're going to put these two algorithms into an object now.
+
+- In `alexander_stepaniv/homework/balanced_reduction/test_binary_counter.cpp`, in order to execute `add_to_counter`, we had to iterate over all the values in a for loop and pass the value as an argument to `add_to_counter`. That is, we outsourced the need for maintaining the "state". In order to move this algorithm within an object, we can maintain an internal state.
+- The other thing that is not going to change throughout the execution, is the value of zero. So, it can also be "fixed" and internalized
+- The operation is also the same throughout the execution, so, that could be fixed as well
+
+We have a choice to use a class or a struct to embed the algorithm into an object. But in this case, since the class should actually have a private state (to iterate over the values), we will use class instead of a struct
+
+```cpp
+
+template <typename T, typename Op>
+class binary_counter
+{
+  private:
+    std::vector<T> counter;
+    Op op;
+    T zero;
+
+  public:
+  // contructor
+  // order of arguments to the constructor is important
+  // because we could potentially "default" the zero to 0 or something
+  binary_counter(const Op& op, const T& zero): op(op), zero(zero){}
+
+  // no need to return anything
+  // return type is void because:
+  // return carry was only supposed to happen when the counter runs out of space
+  // also no need to pass iterators or op and zero, since they're internal to the class
+
+  void add(T x){
+      add_to_counter(counter.begin(), counter.end(), zero, x);
+      if(x!=0)  counter.push_back(x);
+  }
+
+  T reduce(){
+      return reduce_counter(counter.begin(), counter.end(), op, zero);
+    }
+```
+
+- In passing the arguments to the constructor, there are two conflicting conventions. The standard convention says, that the arguments should be passed by const reference. And the second convention says, the functors (function objects) throughout STL are passe by value (because they're very cheap). In case of such a conflict, always use the more standard and general convention. Hence, the arguments to the constructor are pass by const reference.
+- We also used the initializer list for initialization of `op` and `zero`. Doing `op(op)` is better than `op=x` in the constructor code, because `op=x` is equivalent to `op(); op=x;`. So, we're going to save an operation with initializer list.
