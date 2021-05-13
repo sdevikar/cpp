@@ -795,11 +795,11 @@ This because we already know an important property that seed#2 loses only 1 game
 There are two steps to this alorithms.
 
 1. Finding the min and we already know how much space we need for it
-2. Finding the second min in logarithmic time. As we discussed above, we need history for this. And this history is the part where we could potentially use lots of space. But, observe that we don't technically need to save a lot of history. In the tree above, when we're done comparing two seeds we're ready to go a level to the right and discard the history
+2. Finding the second min in logarithmic time. As we discussed above, we need history for this. And this history is the part where we could potentially use lots of space. But, observe that we don't technically need to save a lot of history. In the tree above, when we're done comparing two seeds we're ready to go a level to the right and discard the history. In other words, we really only need to store players with the same seed at a time. So, if there's a player who is "knocked out", we don't need to keep him around in the memory.
 
 If we can't do all the comparisons "in-place", a logarithmic storage is acceptable. In practise, the logarithmic storage would not exceed 64.
 
-In order to find second minimum in logarithmic time, we need to transform a linear sequence into a binary tree. It's important to understand that we can do this rearrangement because this group of numbers is associative. i.e. you can regroup them as you wish, but at the end, the result will still be the same. e.g. you can find a min between (1,4) and (3,6) and then between (1,3). Or you can find a min between (1,3) and (4,6) and then between (1,4), the end result will still be the same, i.e. 1.
+In order to find second minimum in logarithmic time, we need to transform a linear sequence into a binary tree. It's important to understand that we can do this rearrangement because this group of numbers is associative. i.e. you can regroup them as you wish, but at the end, the result will still be the same. e.g. you can find a min between (1,4) and (3,6) and then between (1,3). Or you can find a min between (1,3) and (4,6) and then between (1,4), the end result will still be the same, i.e. 1. 
 
 ### Data structures
 
@@ -816,16 +816,16 @@ In order to put those numbers there, we'd need to figure out how to "combine" th
 For example, we'll take the sequence [11, 10, 19, 13, 18, 4, 15].
 This is an array of size 7. So, we will need a counter of size $\lceil ln(7) \rceil$ = 3
 
-| Value | counter[0] | counter[1] | counter[2] | function returns | comment                         |
-| ----- | ---------- | ---------- | ---------- | ---------------- |----------------------------------
-| Init  | 0          | 0          | 0          | -                | counter = 0                     |
-| 11    | 11         | 0          | 0          | 0                | counter = 001 i.e. 00`0+11`     |
-| 10    | 0          | 21         | 0          | 21               | counter = 010 i.e. 0`11+10`0    |
-| 19    | 19         | 21         | 0          | 0                | counter = 011 i.e. 0`21``0+19`  |
-| 13    | 0          | 0          | 53         | 53               | counter = 100 i.e. `19+21+13`00 |
-| 18    | 18         | 0          | 53         | 0                | counter = 101 i.e.`53`0`0+18`   |
-| 4     | 0          | 22         | 53         | 22               | counter = 110 i.e. `53``18+4`0  |
-| 15    | 15         | 22         | 53         | 0                | counter = 111 i.e. `53``22``0+15` |
+  | # | Value | counter[0] | counter[1] | counter[2] | function returns | comment                          |
+  | - | ----- | ---------- | ---------- | ---------- | ---------------- |----------------------------------| 
+  | 1 | Init  | 0          | 0          | 0          | -                | counter = 0                      |
+  | 2 | 11    | 11         | 0          | 0          | 0                | counter = 001 i.e. 00`0+11`      |
+  | 3 | 10    | 0          | 21         | 0          | 21               | counter = 010 i.e. 0`11+10`0     |
+  | 4 | 19    | 19         | 21         | 0          | 0                | counter = 011 i.e. 0`21``0+19`   |
+  | 5 | 13    | 0          | 0          | 53         | 53               | counter = 100 i.e. `19+21+13`00  |
+  | 6 | 18    | 18         | 0          | 53         | 0                | counter = 101 i.e.`53`0`0+18`    |
+  | 7 | 4     | 0          | 22         | 53         | 22               | counter = 110 i.e. `53``18+4`0   |
+  | 8 | 15    | 15         | 22         | 53         | 0                | counter = 111 i.e. `53``22``0+15`|
 
 The above table shows how this counter is implemented using binary carry propogation style.
 We have replicated counting up from 000 to 111. In each step, we're 
@@ -836,13 +836,18 @@ In the above table, if we look at the non zero numbers in the counter[2..1] as 1
 This is because we implemented the combine operation similar to binary addition. i.e. 0+1 =1, 1+1 = 1,0
 So, in our case, all we've done is, 11 + 10 = 21,0
 
+Notice that this "binary counter device" automatically makes sure that only the numbers of the same strength (players of the same seed) are combined.
+We also don't need the combine operation to be commutitive. i.e. we expect the outcome of `combine(a,b)` to be the same as `combine(b,a)`
+
 #### Second min code
 
 Let's think about the data structure later. Let's start with something very basic i.e. the combine function. What we know about it so far is:
 
 - it is a binary operation (i.e. it operates on two operands)
 - it will operate on a data type of the elements in the array (let's call it T)
-- it needs to continuously give the feedback to the caller as to whether we were able to put the number in a particular position or not. And we know that the datastructure to keep track of this contains either all 0s or the element of type T who has won x number of matches, where x = index. So return type will be T
+- it needs to continuously give the feedback to the caller as to whether we were able to put the number in a particular position or not. And we know that the datastructure to keep track of this contains either all 0s or the element of type T who has won x number of matches, where x = index. So return type will be T. To further explain:
+  - if there was a zero where we're sticking the element in, we return zero
+  - if there was another element where we're going to stick this element in, we return the carry. So, for example in the table above, at row#3, 10 got combined with 11 and the result was 0 with carry 21, so we will return the carry 21
 
 So, below we have
 
@@ -889,7 +894,16 @@ In the code above:
 
 ###### reduce_counter
 
-Now that we have an algorithm for adding things to counter, we can start thinking about the higher level algorithm to take things one by one and reduce the counter.
+Now that we have an algorithm for adding things to counter, we can start thinking about the higher level algorithm to take things one by one and reduce the counter. The idea here is to be greedy and start reducing the smaller sub-trees into bigger sub trees and kind of merge them together.
+Notice that in the table above, the elements that come last are to the left in the binary counter. So, left side is the 
+
+In algorithms that involve comparing / combining numbers, we always need to make sure that we combine/compare numbers of equal parity / weight. This is because of the limitations of computers. Smaller quantities tend to get ignored when added to huge numbers, leading to wrong results.
+e.g. if we add 0.0000000001 to 10000000 and add 0.0000000002 to another 10000000 and then compare 10000000.0000000001 and 10000000.0000000002, the computer may see them as equal numbers. 
+Therefore, in reduction algorithms like these, we always want to combine (reduce) smaller numbers first and then work up to bigger numbers.
+
+We also need to think about initializing the counter in a little more detail here. So far, we've called `zero` as a marker of emptiness. i.e. in `add_to_counter` we checked if the element at a particular index is `zero` and if yes, we concluded that that index was empty and we stuck `T` in there. This process assumed that the counter was already initialized. But what if we're dealing with `int` type `T` and our `zero` is same as int 0? Then we won't know the difference.
+So, the idea is that we can't initialize our result (i.e. the couter) till we find the first non-zero
+
 
 ```cpp
 template <typename T, typename I, typename Op>
