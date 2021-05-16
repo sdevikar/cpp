@@ -8,13 +8,17 @@
             "args": [
                 "build",
                 "--compilation_mode=dbg",
-                // "--sandbox_debug=true",
-                "//homework/balanced_reduction:binary_counter"
+                "//..."
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "echo",
+            "type": "shell",
+            "command": "echo ${workspaceFolder}/bazel-bin/${relativeFileDirname}/${fileBasenameNoExtension}"
         }
     ]
 }

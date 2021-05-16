@@ -1,3 +1,0 @@
-/Users/swapnildevikar/workspace/moderncpp/alexander_stepaniv/homework/count_operations/build/CMakeFiles/rebuild_cache.dir
-/Users/swapnildevikar/workspace/moderncpp/alexander_stepaniv/homework/count_operations/build/CMakeFiles/edit_cache.dir
-/Users/swapnildevikar/workspace/moderncpp/alexander_stepaniv/homework/count_operations/build/CMakeFiles/inhetirence_test.dir
