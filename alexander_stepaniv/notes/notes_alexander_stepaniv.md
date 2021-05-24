@@ -799,7 +799,7 @@ There are two steps to this alorithms.
 
 If we can't do all the comparisons "in-place", a logarithmic storage is acceptable. In practise, the logarithmic storage would not exceed 64.
 
-In order to find second minimum in logarithmic time, we need to transform a linear sequence into a binary tree. It's important to understand that we can do this rearrangement because this group of numbers is associative. i.e. you can regroup them as you wish, but at the end, the result will still be the same. e.g. you can find a min between (1,4) and (3,6) and then between (1,3). Or you can find a min between (1,3) and (4,6) and then between (1,4), the end result will still be the same, i.e. 1. 
+In order to find second minimum in logarithmic time, we need to transform a linear sequence into a binary tree. It's important to understand that we can do this rearrangement because this group of numbers is associative. i.e. you can regroup them as you wish, but at the end, the result will still be the same. e.g. you can find a min between (1,4) and (3,6) and then between (1,3). Or you can find a min between (1,3) and (4,6) and then between (1,4), the end result will still be the same, i.e. 1.
 
 ### Data structures
 
@@ -816,21 +816,22 @@ In order to put those numbers there, we'd need to figure out how to "combine" th
 For example, we'll take the sequence [11, 10, 19, 13, 18, 4, 15].
 This is an array of size 7. So, we will need a counter of size $\lceil ln(7) \rceil$ = 3
 
-  | # | Value | counter[0] | counter[1] | counter[2] | function returns | comment                          |
-  | - | ----- | ---------- | ---------- | ---------- | ---------------- |----------------------------------| 
-  | 1 | Init  | 0          | 0          | 0          | -                | counter = 0                      |
-  | 2 | 11    | 11         | 0          | 0          | 0                | counter = 001 i.e. 00`0+11`      |
-  | 3 | 10    | 0          | 21         | 0          | 21               | counter = 010 i.e. 0`11+10`0     |
-  | 4 | 19    | 19         | 21         | 0          | 0                | counter = 011 i.e. 0`21``0+19`   |
-  | 5 | 13    | 0          | 0          | 53         | 53               | counter = 100 i.e. `19+21+13`00  |
-  | 6 | 18    | 18         | 0          | 53         | 0                | counter = 101 i.e.`53`0`0+18`    |
-  | 7 | 4     | 0          | 22         | 53         | 22               | counter = 110 i.e. `53``18+4`0   |
-  | 8 | 15    | 15         | 22         | 53         | 0                | counter = 111 i.e. `53``22``0+15`|
+| #   | Value | counter[0] | counter[1] | counter[2] | function returns | comment                             |
+| --- | ----- | ---------- | ---------- | ---------- | ---------------- | ----------------------------------- |
+| 1   | Init  | 0          | 0          | 0          | -                | counter = 0                         |
+| 2   | 11    | 11         | 0          | 0          | 0                | counter = 001 i.e. 00`0+11`         |
+| 3   | 10    | 0          | 21         | 0          | 21               | counter = 010 i.e. 0`11+10`0        |
+| 4   | 19    | 19         | 21         | 0          | 0                | counter = 011 i.e. 0` 21``0+19 `    |
+| 5   | 13    | 0          | 0          | 53         | 53               | counter = 100 i.e. `19+21+13`00     |
+| 6   | 18    | 18         | 0          | 53         | 0                | counter = 101 i.e.`53`0`0+18`       |
+| 7   | 4     | 0          | 22         | 53         | 22               | counter = 110 i.e. ` 53``18+4 `0    |
+| 8   | 15    | 15         | 22         | 53         | 0                | counter = 111 i.e. ` 53``22``0+15 ` |
 
 The above table shows how this counter is implemented using binary carry propogation style.
-We have replicated counting up from 000 to 111. In each step, we're 
+We have replicated counting up from 000 to 111. In each step, we're
+
 - working in an element from the sequence
-- and performing combine operation (for simplicity, we've shown addition) and this is done in such a way that the counter looks like a binary number. This will allow us to represent the number of elements in the sequence that the counter has combined. e.g. `0` `21` `0` looks like `010`, i.e. the second bit set and hence representing the fact that two numbers are combined. 
+- and performing combine operation (for simplicity, we've shown addition) and this is done in such a way that the counter looks like a binary number. This will allow us to represent the number of elements in the sequence that the counter has combined. e.g. `0` `21` `0` looks like `010`, i.e. the second bit set and hence representing the fact that two numbers are combined.
 
 In the above table, if we look at the non zero numbers in the counter[2..1] as 1's, then at each step, we have the number of elements inserted in the counter.
 This is because we implemented the combine operation similar to binary addition. i.e. 0+1 =1, 1+1 = 1,0
@@ -888,22 +889,21 @@ T add_to_counter(I first, I last, Op op, const T &zero, T carry)
 In the code above:
 
 - the argument `zero` is just some marker of "emptiness". For example, NULL. So that, we can compare the value at a position with it and see if it's empty.
-- notice that carry is pass by value - this is because we want to modify it
+- notice that carry is pass by value - this is because we want to reuse it as an accumulator to same temporary result and therefore need to modify it within the loop. Especially if a variable is going to be modified within a loop, we should keep it as close (within the same stack frame) as possible. Hence, pass by value makes sense in this case. Passing it by reference would've meant that the loop modifies the accumulator which is sitting somewhere else in a different stack frame and thus it'll be slow.
 - in the combining operation `op` \*first and carry arguments' order matters because `op` is not a commutitive operation. And we've chosen to pass first as the first argument because it was already to the left of carry (I didn't understand this part)
 - we have done `*first=zero` at line 848. This is because in binary operations, 1+1 = 10, i.e. 0 with carry 1. We also want to keep this counter as clean as possible and keep the bit array balanced. Balancing is important because we're trying to fit n elements in log(n) size bit array.
 
 ###### reduce_counter
 
 Now that we have an algorithm for adding things to counter, we can start thinking about the higher level algorithm to take things one by one and reduce the counter. The idea here is to be greedy and start reducing the smaller sub-trees into bigger sub trees and kind of merge them together.
-Notice that in the table above, the elements that come last are to the left in the binary counter. So, left side is the 
+Notice that in the table above, the elements that come last are to the left in the binary counter. So, left side is the
 
 In algorithms that involve comparing / combining numbers, we always need to make sure that we combine/compare numbers of equal parity / weight. This is because of the limitations of computers. Smaller quantities tend to get ignored when added to huge numbers, leading to wrong results.
-e.g. if we add 0.0000000001 to 10000000 and add 0.0000000002 to another 10000000 and then compare 10000000.0000000001 and 10000000.0000000002, the computer may see them as equal numbers. 
+e.g. if we add 0.0000000001 to 10000000 and add 0.0000000002 to another 10000000 and then compare 10000000.0000000001 and 10000000.0000000002, the computer may see them as equal numbers.
 Therefore, in reduction algorithms like these, we always want to combine (reduce) smaller numbers first and then work up to bigger numbers.
 
 We also need to think about initializing the counter in a little more detail here. So far, we've called `zero` as a marker of emptiness. i.e. in `add_to_counter` we checked if the element at a particular index is `zero` and if yes, we concluded that that index was empty and we stuck `T` in there. This process assumed that the counter was already initialized. But what if we're dealing with `int` type `T` and our `zero` is same as int 0? Then we won't know the difference.
 So, the idea is that we can't initialize our result (i.e. the couter) till we find the first non-zero
-
 
 ```cpp
 template <typename T, typename I, typename Op>
@@ -941,6 +941,8 @@ T reduce_counter(I first, I last, Op op, const T &zero){
 In lecture 6 part 1 and 2, we wrote two algorithms to add values of type T to a special counter and reduce the counter.
 We're going to put these two algorithms into an object now.
 
+### The binary_counter class
+
 - In `alexander_stepaniv/homework/balanced_reduction/test_binary_counter.cpp`, in order to execute `add_to_counter`, we had to iterate over all the values in a for loop and pass the value as an argument to `add_to_counter`. That is, we outsourced the need for maintaining the "state". In order to move this algorithm within an object, we can maintain an internal state.
 - The other thing that is not going to change throughout the execution, is the value of zero. So, it can also be "fixed" and internalized
 - The operation is also the same throughout the execution, so, that could be fixed as well
@@ -961,7 +963,10 @@ class binary_counter
   // contructor
   // order of arguments to the constructor is important
   // because we could potentially "default" the zero to 0 or something
-  binary_counter(const Op& op, const T& zero): op(op), zero(zero){}
+  // e.g. zero is 0 for plus, zero is 1 for multiplication and so on
+  binary_counter(const Op& op, const T& zero): op(op), zero(zero){
+    counter.reserve(32)
+  }
 
   // no need to return anything
   // return type is void because:
@@ -978,5 +983,51 @@ class binary_counter
     }
 ```
 
-- In passing the arguments to the constructor, there are two conflicting conventions. The standard convention says, that the arguments should be passed by const reference. And the second convention says, the functors (function objects) throughout STL are passe by value (because they're very cheap). In case of such a conflict, always use the more standard and general convention. Hence, the arguments to the constructor are pass by const reference.
+- In passing the arguments to the constructor, there are two conflicting conventions. The standard convention says, that the arguments should be passed by const reference. And the second convention says, the functors (function objects) throughout STL are passed by value (because they're very cheap). In case of such a conflict, always use the more standard and general convention. Hence, the arguments to the constructor are pass by const reference. The reason for general convention of passing by reference is that we do not want to construct before constructing. (because if you pass by value, copy constructor would be invoked.)
 - We also used the initializer list for initialization of `op` and `zero`. Doing `op(op)` is better than `op=x` in the constructor code, because `op=x` is equivalent to `op(); op=x;`. So, we're going to save an operation with initializer list.
+- We "reserved" memory equivanent to 32 units of type T for counter. We know that the upper bound on the counter size is 64, so we could've reserved just 64 units. But in practise, 32 is enough since 2^64 is a very large number (18.4 exabytes) that we'll probably never go over. Note that `reserve` only allocates memory. But the vector is still size 0
+
+### Using the binary_counter class to find the min element
+
+Now we're going to use the binary_couter class to find the min element. Note that we've already written `min_element` in [this section] (###-find-minimum-element-from-a-range), where the `min_element` function took two iterators to the collection (i.e. begin and end) and returned an iterator pointing to the minimum element in that collection. We want to do the same thing with the `binary_counter`.
+So, let's see what we know so far:
+- We'd have a collection, let's say an array.
+- Our goal is to define a function that accepts the beginning (first) and the end (last) of this collection and returns the position of the min element. 
+  - So, we know that this function will take the iterator pointers (first, last). 
+  - Since this function will use `binary_counter` class, it needs to know for sure, how to construct `binary_counter`. Which means it needs to know what `op` is and what `zero` is. Note that since we're reusing `min_element` signature here, `Operation` is called `Compare` instead. But it is a combine operation regardless.
+  - a good `zero` is just last, because it's just a marker of emptiness. So, we don't really need to pass `zero` to this function explicitly. So, the function signature would look like this:
+```cpp
+template <typename I, typename Compare>
+// requires I is a ForwardIterator
+// and Compare is a StrictWeakOrdering on ValueType(I)
+I min_element_binary(I first, I last, Compare cmp) 
+```
+- We'll construct the `binary_counter` class with begin and end iterator and find min element in "binary way". What do we need to know to construct the class?
+  - The class is templatized. So, we need to know the type T and the typename op.
+  - Notice that typename `op` is a type. i.e. not a function pointer or something like that. So, we'd have to create and specify an actual type or an object for template substitution. And since the class constructor needs an `op` argument, we'll also have to construct it. Let's call that type as `min_op`
+- What should `min_op` do? It should look at two positions in a collection (using iterator) and return an iterator position that's minimum of the two. The reason why we're only dealing with the iterators and not values is because this way 
+  - we don't need to pass around the entire collection
+  - when the function returns, we'll know where in the collection the element is and do whatever we want with it
+- Also notice that when we call `min_element_binary`, we already pass `Compare cmp`. But this is a standard compare functor like `std::less`. We need to write a wrapper around it because we want to wotk with the collection and compare the elements pointed to by iterators. `std::less` can only be templatized on the datatype `T`. We need to be able to templatize on iterator type `I` as well. `min_op` will eventually call `std::less` after it dereferences the stuff pointed to by iterators.
+
+```cpp
+// - compares two iterators and returns the one
+//   pointing to the smallest element
+template <typename Compare>
+class min_op 
+{
+private:
+  Compare cmp;
+public:
+  min_op(const Compare& cmp) : cmp(cmp) {}
+  template <typename I>
+  I operator()(const I& x, const I& y) {
+    return cmp(*y, *x) ? y : x;
+  }
+};
+
+```
+
+In the above code:
+- notice that the `min_op` class is parameterized for `Compare` type only and within the class `()` operator is templatized with iterator type `I`. This allows us to do something like `min_op<Compare>`, without worrying about iterator type just yet. Later when its time to use min_op `()` operator, we do `carry = op(*first, carry);` (see `add_to_counter` function) and the code is generated for `min_op` based on the type `I` passed to `add_to_counter`
+    
