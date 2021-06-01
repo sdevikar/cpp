@@ -21,7 +21,7 @@ We know that in order to find min, we will need `n-1` comparisons (as discussed 
 The idea of finding the second min stems from the player seedings in tennis tournaments. In order for tournament to be fair, it is important that the final game is played between the two strongest players.
 At the same time, not everyone can play with everyone. So the games are arranged in a binary tree. See this example:
 
-![Elimination Bracket](images/brackets.png)
+![Elimination Bracket](../images/brackets.png)
 
 Here, the winner had to win 4 matches. i.e. $\lceil ln(n) \rceil$ (ceiling on log base 2 n) matches and beat $\lceil ln(n) \rceil$ players, where n is 16 in this case.
 It is also obvious that the seed#2 player had to win $\lceil ln(n)-1 \rceil$ matches and that seed#2 lost ONLY one match and that was against seed#1.
@@ -69,30 +69,35 @@ In order to put those numbers there, we'd need to figure out how to "combine" th
 
 For example, we'll take the sequence [11, 10, 19, 13, 18, 4, 15].
 This is an array of size 7. So, we will need a counter of size $\lceil ln(7) \rceil$ = 3
+In the table below, `z` is a marker that signifies an empty space where any value `x` can be stuck in.
+In other words, `combine(z,x) = x` i.e. combining x and z will just give back `x`.
+Following table shows how the counter works after each `add_to_counter` operation.
 
-| #   | Value | counter[0] | counter[1] | counter[2] | function returns | comment                             |
-| --- | ----- | ---------- | ---------- | ---------- | ---------------- | ----------------------------------- |
-| 1   | Init  | 0          | 0          | 0          | -                | counter = 0                         |
-| 2   | 11    | 11         | 0          | 0          | 0                | counter = 001 i.e. 00`0+11`         |
-| 3   | 10    | 0          | 21         | 0          | 21               | counter = 010 i.e. 0`11+10`0        |
-| 4   | 19    | 19         | 21         | 0          | 0                | counter = 011 i.e. 0` 21``0+19 `    |
-| 5   | 13    | 0          | 0          | 53         | 53               | counter = 100 i.e. `19+21+13`00     |
-| 6   | 18    | 18         | 0          | 53         | 0                | counter = 101 i.e.`53`0`0+18`       |
-| 7   | 4     | 0          | 22         | 53         | 22               | counter = 110 i.e. ` 53``18+4 `0    |
-| 8   | 15    | 15         | 22         | 53         | 0                | counter = 111 i.e. ` 53``22``0+15 ` |
-
-The above table shows how this counter is implemented using binary carry propogation style.
+The table below shows how this counter is implemented using binary carry propogation style.
 We have replicated counting up from 000 to 111. In each step, we're
 
-- working in an element from the sequence
-- and performing combine operation (for simplicity, we've shown addition) and this is done in such a way that the counter looks like a binary number. This will allow us to represent the number of elements in the sequence that the counter has combined. e.g. `0` `21` `0` looks like `010`, i.e. the second bit set and hence representing the fact that two numbers are combined.
+- adding in an element from the sequence to the counter
+- performing `combine` operation
+  This combine operation is actually a comparison (cmp) operation such as `std::less` as we will see in lecture7
 
-In the above table, if we look at the non zero numbers in the counter[2..1] as 1's, then at each step, we have the number of elements inserted in the counter.
-This is because we implemented the combine operation similar to binary addition. i.e. 0+1 =1, 1+1 = 1,0
-So, in our case, all we've done is, 11 + 10 = 21,0
+| Value | cnt[0] | cnt[1] | cnt[2] | return | comment                                                    |
+| ----- | ------ | ------ | ------ | ------ | ---------------------------------------------------------- |
+| Init  | z      | z      | z      | -      | cnt = zzz                                                  |
+| 11    | 11     | z      | z      | 11     | cnt[0] was z, so 11 gets stuck at cnt[0]                   |
+| 10    | z      | 10     | z      | 10     | cnt[0] was 11. cmp(11,10) = 10. 10 advances to next index  |
+| 19    | 19     | 10     | z      | zero   | cnt[0] was z, so 19 gets stuck at cnt[0]                   |
+| 13    | z      | z      | 10     | 10     | cnt[0] was 19. cmp(13,19) = 13. 13 advances to next index. |
+|       |        |        |        |        | cnt[1] was 10. cmp(10,13) = 10. 10 advances to next index. |
+| 18    | 18     | z      | 10     | zero   | cnt[0] was z, so 18 gets stuck at cnt[0]                   |
+| 4     | z      | 4      | 10     | zero   | cnt[0] was 18. cmp(18,4)= 4. 4 advances to next index      |
+|       |        |        |        |        | cnt[1] was z. so 4 gets stuck at cnt[1]                    |
+| 15    | 15     | 4      | 10     | zero   | cnt[0] was z, so 15 gets stuck at cnt[0]                   |
 
-Notice that this "binary counter device" automatically makes sure that only the numbers of the same strength (players of the same seed) are combined.
-We also don't need the combine operation to be commutitive. i.e. we expect the outcome of `combine(a,b)` to be the same as `combine(b,a)`
+There are a couple of things to note here:
+
+- The table above only shows how add_to_counter works. i.e. how we can fit n things in log(n) space with std::less combine operation. This is not the whole algorithm. A `reduce` operation has to happen on this counter to find the min and second min
+- This "binary counter device" automatically makes sure that only the numbers of the same strength (players of the same seed) are combined/compared. This is done by advancing the element that has won a comparison to the next index. If advancing to next index results in another comparison, we do that as well. For example, in above table, when we add 13 to counter, it gets compared to 19 and wins. So, it advances to next index. The next index is not empty and has 10 sitting there. This results in another comparison, in which 10 wins and advances to index 2.
+- Also note that we don't need the combine operation to be commutitive. i.e. we expect the outcome of `combine(a,b)` to be the same as `combine(b,a)`. But to maintain stability, we must keep the oldest element to the left when we do `combine(left, right)`
 
 #### Second min code
 

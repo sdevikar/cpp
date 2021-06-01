@@ -16,6 +16,27 @@
             }
         },
         {
+            "type": "shell",
+            "label": "clang++ build active file",
+            "command": "/usr/bin/clang++",
+            "args": [
+              "-std=c++17",
+              "-stdlib=libc++",
+              "-g",
+              "${file}",
+              "-o",
+              "${fileDirname}/${fileBasenameNoExtension}"
+            ],
+            "options": {
+              "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+              "kind": "build",
+              "isDefault": true
+            }
+          },
+        {
             "label": "echo",
             "type": "shell",
             "command": "echo ${workspaceFolder}/bazel-bin/${relativeFileDirname}/${fileBasenameNoExtension}"

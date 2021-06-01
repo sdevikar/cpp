@@ -5,16 +5,42 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "(lldb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "clang++ build active file"
+        },
+        {
+            "name": "Bazel build and debug active file",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bazel-bin/${relativeFileDirname}/${fileBasenameNoExtension}",
             "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}/bazel-bin/${relativeFileDirname}",
+            "environment": [],
             "externalConsole": false,
-            "MIMode": "gdb",
-            "preLaunchTask": "bazel build",
-        }
+            "MIMode": "lldb",
+            "preLaunchTask": "bazel build"
+        },
+        // {
+        //     "name": "(gdb) Launch",
+        //     "type": "cppdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/bazel-bin/${relativeFileDirname}/${fileBasenameNoExtension}",
+        //     "args": [],
+        //     "stopAtEntry": false,
+        //     "cwd": "${workspaceFolder}",
+        //     "externalConsole": false,
+        //     "MIMode": "gdb",
+        //     "preLaunchTask": "bazel build",
+        // }
     ]
 }
