@@ -85,13 +85,13 @@ We have replicated counting up from 000 to 111. In each step, we're
 | Init  | z      | z      | z      | -      | cnt = zzz                                                  |
 | 11    | 11     | z      | z      | 11     | cnt[0] was z, so 11 gets stuck at cnt[0]                   |
 | 10    | z      | 10     | z      | 10     | cnt[0] was 11. cmp(11,10) = 10. 10 advances to next index  |
-| 19    | 19     | 10     | z      | zero   | cnt[0] was z, so 19 gets stuck at cnt[0]                   |
+| 19    | 19     | 10     | z      | z      | cnt[0] was z, so 19 gets stuck at cnt[0]                   |
 | 13    | z      | z      | 10     | 10     | cnt[0] was 19. cmp(13,19) = 13. 13 advances to next index. |
 |       |        |        |        |        | cnt[1] was 10. cmp(10,13) = 10. 10 advances to next index. |
-| 18    | 18     | z      | 10     | zero   | cnt[0] was z, so 18 gets stuck at cnt[0]                   |
-| 4     | z      | 4      | 10     | zero   | cnt[0] was 18. cmp(18,4)= 4. 4 advances to next index      |
+| 18    | 18     | z      | 10     | z      | cnt[0] was z, so 18 gets stuck at cnt[0]                   |
+| 4     | z      | 4      | 10     | z      | cnt[0] was 18. cmp(18,4)= 4. 4 advances to next index      |
 |       |        |        |        |        | cnt[1] was z. so 4 gets stuck at cnt[1]                    |
-| 15    | 15     | 4      | 10     | zero   | cnt[0] was z, so 15 gets stuck at cnt[0]                   |
+| 15    | 15     | 4      | 10     | z      | cnt[0] was z, so 15 gets stuck at cnt[0]                   |
 
 There are a couple of things to note here:
 
@@ -155,14 +155,21 @@ In the code above:
 ###### reduce_counter
 
 Now that we have an algorithm for adding things to counter, we can start thinking about the higher level algorithm to take things one by one and reduce the counter. The idea here is to be greedy and start reducing the smaller sub-trees into bigger sub trees and kind of merge them together.
-Notice that in the table above, the elements that come last are to the left in the binary counter. So, left side is the
+Notice that in the table above, the elements that come last are to the left in the binary counter. So, left side is the smaller subtree.
 
 In algorithms that involve comparing / combining numbers, we always need to make sure that we combine/compare numbers of equal parity / weight. This is because of the limitations of computers. Smaller quantities tend to get ignored when added to huge numbers, leading to wrong results.
 e.g. if we add 0.0000000001 to 10000000 and add 0.0000000002 to another 10000000 and then compare 10000000.0000000001 and 10000000.0000000002, the computer may see them as equal numbers.
 Therefore, in reduction algorithms like these, we always want to combine (reduce) smaller numbers first and then work up to bigger numbers.
 
 We also need to think about initializing the counter in a little more detail here. So far, we've called `zero` as a marker of emptiness. i.e. in `add_to_counter` we checked if the element at a particular index is `zero` and if yes, we concluded that that index was empty and we stuck `T` in there. This process assumed that the counter was already initialized. But what if we're dealing with `int` type `T` and our `zero` is same as int 0? Then we won't know the difference.
-So, the idea is that we can't initialize our result (i.e. the couter) till we find the first non-zero
+So, the idea is that we can't initialize our result (i.e. the couter) till we find the first non-zero.
+
+Continuing from the above example where the add_to_counter resulted in a counter with elements {15,4, 10}, the reduction algorighm will work as follows:
+
+- we find the first non-zero value i.e. 15 here, result = 15
+- we start iterating to the end of the array while combining non-zero elements
+  - 15-4 matchup, 4 wins, result := 4
+  - 4 -10 matchup, 4 wins, result = 4 
 
 ```cpp
 template <typename T, typename I, typename Op>

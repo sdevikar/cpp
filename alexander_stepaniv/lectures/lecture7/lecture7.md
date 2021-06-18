@@ -1,4 +1,4 @@
-## Lecture 7
+# Lecture 7
 
 - [Lecture 7](#lecture-7)
   - [The binary_counter class](#the-binary_counter-class)
@@ -7,7 +7,7 @@
 In lecture 6 part 1 and 2, we wrote two algorithms to add values of type T to a special counter and reduce the counter.
 We're going to put these two algorithms into an object now.
 
-### The binary_counter class
+## The binary_counter class
 
 - In `alexander_stepaniv/homework/balanced_reduction/test_binary_counter.cpp`, in order to execute `add_to_counter`, we had to iterate over all the values in a for loop and pass the value as an argument to `add_to_counter`. That is, we outsourced the need for maintaining the "state". In order to move this algorithm within an object, we can maintain an internal state.
 - The other thing that is not going to change throughout the execution, is the value of zero. So, it can also be "fixed" and internalized
@@ -53,7 +53,7 @@ class binary_counter
 - We also used the initializer list for initialization of `op` and `zero`. Doing `op(op)` is better than `op=x` in the constructor code, because `op=x` is equivalent to `op(); op=x;`. So, we're going to save an operation with initializer list.
 - We "reserved" memory equivanent to 32 units of type T for counter. We know that the upper bound on the counter size is 64, so we could've reserved just 64 units. But in practise, 32 is enough since 2^64 is a very large number (18.4 exabytes) that we'll probably never go over. Note that `reserve` only allocates memory. But the vector is still size 0
 
-### Using the binary_counter class to find the min element
+## Using the binary_counter class to find the min element
 
 Now we're going to use the binary_couter class to find the min element. Note that we've already written `min_element` in [this section] (###-find-minimum-element-from-a-range), where the `min_element` function took two iterators to the collection (i.e. begin and end) and returned an iterator pointing to the minimum element in that collection. We want to do the same thing with the `binary_counter`.
 So, let's see what we know so far:
