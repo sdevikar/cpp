@@ -18,7 +18,7 @@
             "preLaunchTask": "clang++ build active file"
         },
         {
-            "name": "Bazel build and debug active file",
+            "name": "Bazel build and debug active file with lldb",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bazel-bin/${relativeFileDirname}/${fileBasenameNoExtension}",
@@ -30,17 +30,18 @@
             "MIMode": "lldb",
             "preLaunchTask": "bazel build"
         },
-        // {
-        //     "name": "(gdb) Launch",
-        //     "type": "cppdbg",
-        //     "request": "launch",
-        //     "program": "${workspaceFolder}/bazel-bin/${relativeFileDirname}/${fileBasenameNoExtension}",
-        //     "args": [],
-        //     "stopAtEntry": false,
-        //     "cwd": "${workspaceFolder}",
-        //     "externalConsole": false,
-        //     "MIMode": "gdb",
-        //     "preLaunchTask": "bazel build",
-        // }
+        {
+            "name": "Bazel build and debug active file with gdb",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/${relativeFileDirname}/${fileBasenameNoExtension}",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}/bazel-bin/${relativeFileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "preLaunchTask": "bazel build"
+        },
     ]
 }

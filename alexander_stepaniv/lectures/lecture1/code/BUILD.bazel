@@ -1,0 +1,31 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "count_operations",
+    srcs = [
+        "concepts.h",
+        "count_operations.cpp",
+        "count_operations.h",
+        "functorized.h",
+        "instrumented.cpp",
+        "instrumented.h",
+        "iota.h",
+        "setsort.h",
+        "table_util.h",
+    ],
+)
+
+cc_binary(
+    name = "count_operations_normalized",
+    srcs = [
+        "concepts.h",
+        "count_operations_normalized.cpp",
+        "count_operations.h",
+        "functorized.h",
+        "instrumented.cpp",
+        "instrumented.h",
+        "iota.h",
+        "setsort.h",
+        "table_util.h",
+    ],
+)

@@ -13,7 +13,8 @@ We're going to put these two algorithms into an object now.
 - The other thing that is not going to change throughout the execution, is the value of zero. So, it can also be "fixed" and internalized
 - The operation is also the same throughout the execution, so, that could be fixed as well
 
-We have a choice to use a class or a struct to embed the algorithm into an object. But in this case, since the class should actually have a private state (to iterate over the values), we will use class instead of a struct
+We have a choice to use a class or a struct to embed the algorithm into an object. But in this case, since the class should actually have a private state (to iterate over the values), we will use class instead of a struct. ote that both class and struct can have public and private methods. In structs, the DEFAULT visibility is public.
+
 
 ```cpp
 
@@ -40,8 +41,8 @@ class binary_counter
   // also no need to pass iterators or op and zero, since they're internal to the class
 
   void add(T x){
-      add_to_counter(counter.begin(), counter.end(), zero, x);
-      if(x!=0)  counter.push_back(x);
+      x = add_to_counter(counter.begin(), counter.end(), op, zero, x);
+      if(x!= zero)  counter.push_back(x);
   }
 
   T reduce(){
