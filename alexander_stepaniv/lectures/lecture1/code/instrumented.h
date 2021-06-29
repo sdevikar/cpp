@@ -22,49 +22,33 @@ struct instrumented :  instrumented_base
   typedef T value_type;
   T value;
   // Conversions from T and to T:
-  explicit instrumented(const T& x) : value(x) { ++counts[construction]; }
+  // TODO: construction of instrumented<T> from T
 
 
   // Semiregular:
-  instrumented(const instrumented& x) : value(x.value) {
-    ++counts[copy];
-  } 
-  instrumented() { ++counts[default_constructor]; }
-  ~instrumented() { ++counts[destructor]; }
-  instrumented& operator=(const instrumented& x) {  
-    ++counts[assignment];
-    value = x.value;
-    return *this;
-  }
-  // Regular
-  friend
-  bool operator==(const instrumented& x, const instrumented& y) {
-    ++counts[equality];
-    return x.value == y.value;
-  }
-  friend
-  bool operator!=(const instrumented& x, const instrumented& y) {
-     return !(x == y);
-  }
-  // TotallyOrdered
-  friend
-  bool operator<(const instrumented& x, const instrumented& y) { 
-    ++counts[comparison];
-    return x.value < y.value;
-  }
-  friend
-  bool operator>(const instrumented& x, const instrumented& y) {
-    return y < x;
-  }
-  friend
-  bool operator<=(const instrumented& x, const instrumented& y) {
-    return !(y < x);
-  }
-  friend
-  bool operator>=(const instrumented& x, const instrumented& y) {
-    return !(x < y);
-  } 
+  
+  // TODO: Implement copy constructor
 
+  // TODO: Implement default constructor
+
+  // TODO: Implement destructor
+
+  // TODO: Implement = operator
+
+  
+  
+  // Regular
+
+  // TODO: Implement == operator for equality
+  // TODO: Implement != operator for inequality
+
+
+  // TotallyOrdered
+
+  // TODO: Implement < for comparison
+  // TODO: Implement > for comparison
+  // TODO: Implement <= for comparison
+  // TODO: Implement >= for comparison
 
 };
 
