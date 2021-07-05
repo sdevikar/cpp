@@ -1,10 +1,4 @@
-# Notes from Complete Modern C++ course from Udemy
-
-Concepts that are new in modern C++ go here.
-
-## Section 1 - Basic Language Facilities
-
-### Uniform Initialization
+## Uniform Initialization
 
 - Uniform initialization works both for scalar and array types. We can use `{}` type initialization for all types.
 - In C++98, there were two different ways of initialization depending on whether the data type is premitive. e.g.
@@ -58,8 +52,3 @@ char* h2 = new[8]{"Hello"};
     - forces initialization 
     - prevents narrowing conversion e.g. the following will result in an error or a warning depending on the compiler:
     `float x{5.0}; int y{x};`
-### Const qualifier and compound types
-
-### Automatic type inference
-
-## Move semantics
