@@ -318,3 +318,67 @@ int main(void)
 ```
 
 This works because for lambda expression with an empty capturelist, compiler generates a type conversion operator. This point conversion operator returns a pointer to function. And the pointer is pointing to an internal static member function inside the lambda expression. And this function internally invokes the `()` operator
+
+### Generalized lambda captures C++14
+
+- Generalized capture allows for the creation of new variables inside the capute clause (think `for(int i = 0;...)` where i is created inside the for loop braces). The syntax is:
+
+```cpp
+// create a variable var
+[var = expression](args){...};
+
+// create a reference to variable var
+[&var = expression](args){...};
+```
+
+Here's a trivial example:
+
+```cpp
+int x = 5;
+
+auto myexp = [y=x](double offset){
+    return y + offset;
+}
+
+myexp(0.1);  // answer = 5.1
+```
+
+- Notice that in the above example, the type of variables `y` is deduced from the type of `x`. In general, since we don't need to specify the datatype of `y` we need to initialize the variables created in the generalized capture list with some value, so the type can be deduced automatically. (e.g. `y = 0.0` would be double, `y = 0` would be int and so on)
+
+### Why generalized lambda capture 
+
+Earlier we saw that:
+- capture list allows for making an outer scope variable available to lambda expression. By default it's not modifiable
+- to modify, we can do the lambda capture by reference or
+- we can make lambda mutable
+
+So, if all of the above possible, why create a new variable in the capture list? 
+
+This has to do with the scope. Sometimes, we may need a variable that's used only inside the lambda expression and thereafter, there's no use for it. e.g. consider the following for writing to a file:
+
+```cpp
+std::ofstream outfilestream("file.txt");
+std::string content = "some content";
+
+// lambda expression to write something to the file
+auto filewrite = [&outfilestream](std::string content) {
+    outfilestream << content;
+} 
+
+// invoke lambda expression
+filewrite(content);
+```
+The above code works. But as we can see, outfilestream is still available for  the code that might follow. So, instead, we can do the following:
+
+```cpp
+
+// lambda expression to write something to the file
+// notice the use of std::move, making outfilestream inaccesible later
+// and mutable makes `os` writable
+auto filewrite = [os = std::move(outfilestream)](std::string content) mutable{
+    os << content;
+} 
+
+// invoke lambda expression
+filewrite(content);
+```
