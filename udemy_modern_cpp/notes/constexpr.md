@@ -1,4 +1,4 @@
-# constexpt keyword
+# constexpr keyword
 
 constexpr:
 
@@ -22,7 +22,7 @@ Here are a couple of examples for clarification:
 constexpr int i = 10;
 int arr[i];
 
-// But the above is no different than the following for this specific case:
+// And the above is *no* different than the following for this specific case:
 const int i = 10;
 int arr[i];
 
