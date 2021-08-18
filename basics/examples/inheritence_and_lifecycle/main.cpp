@@ -15,7 +15,7 @@ int main(){
   // So constructor of class B will be called
   // After base class is constructed, we're back to construction process of D
   // D also instantiates an object of class C, so, that will be constructed next
-  // After C is contructed, D has everything to get instantiated
+  // After C is constructed, D has everything to get instantiated
   // So the output during construction is:
   // Constructor of B
   // Constructor of C

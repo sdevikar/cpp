@@ -14,7 +14,7 @@ public:
 
   // This is executed when cout << base; is called
   // We happened to define the friend function here along with its declaration
-  // we could have totally just declared friend function here and declared somewher else globally
+  // we could have totally just declared friend function here and defined it somewhere else globally
   // ALSO, this is not overriding the child class <<operator
   // instead, this is a completely new global function, because it's a friend function
   friend ostream& operator<<(ostream& os, Child0& c0){

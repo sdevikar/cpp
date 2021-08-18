@@ -49,7 +49,7 @@ int main(void){
   // gets copied to formal argument, "formalarg2" of StringWithDefaultCopyConstructor
   // on bit by bit basis
   // this mean, formalarg2._str and string2._str point to the same memory location
-  // after StringWithDefaultCopyConstructor returns, the formalarg2 destructor is called
+  // after ChangeToUpperCase2 returns, the formalarg2 destructor is called
   // and formalarg2._str is freed
   // therefore, when string2.print() tries to print string2._str, which is same as
   // freed formalarg2._str, segmentation fault occurs

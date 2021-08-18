@@ -31,6 +31,8 @@ public:
   // Notice here that the return value is reference to Complex object
   // i.e. whoever is calling ++ operator will receive the **reference** to
   // this object
+  // for prefix, we need to increment first and then return, so this case
+  // is straightforward. We increment the object state and return the object
   Complex& operator++(){
     cout << "Pre increment operator called" << endl;
     re++;
@@ -42,11 +44,16 @@ public:
   // notice the additional int argument
   // also notice that we're returning a new object Complex c
   // therefore, this is not returning a reference
-  // BEcause the caller will make a copy of Complex c, when they
+  // for postfix operators, we need to return the current state of the object
+  // and then perform the increment operation.
+  // So, we save the state first in a temporary object
+  // perform increment on the class's internal state accordinly
+  // and return the saved temporary object
+  // The caller will make a copy of Complex c, when they
   // access it using = operator
   Complex operator++(int){
     cout << "Post increment operator called" << endl;
-    Complex c(re, im); // create a new object
+    Complex c(re, im); // create a new temporary object
     re++; // change internal state
     im++; // change internal state
     return c; // return the copy of original object

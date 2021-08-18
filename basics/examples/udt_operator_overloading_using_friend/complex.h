@@ -6,7 +6,6 @@ class Complex{
 
 private:
 
-  // we will keep these public for now, for simplicity
   int re;
   int im;
 
@@ -37,6 +36,10 @@ public:
   }
 
   // this will account for n+ complex_number
+  // this is not a member function of the class
+  // but a friend function can be *defined* within the class if desired
+  // here, even though re and im are private members of Complex class,
+  // because operator+ is a friend function, we can directly access these members
   friend Complex operator+(const int z, const Complex& comp){
     cout << "Operator + called - #3" << endl;
     return Complex(comp.re+z, comp.im);

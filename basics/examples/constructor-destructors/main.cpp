@@ -25,7 +25,7 @@ int main(void){
 
   Point p[3];
 
-  // Now we will construct point2 objects and veryfy that the destructor for
+  // Now we will construct point2 objects and verify that the destructor for
   // point2 is called first and then the destructor of point class is called
   Point2 p2[3];
 

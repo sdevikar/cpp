@@ -54,7 +54,7 @@ class E : public B{
 public:
   void f(){
     x; // can't access x because x was inaccessible in B, since it was a private member of A
-    u; // can't access u because u was provate in base class B
+    u; // can't access u because u was private in base class B
   }
 };
 

@@ -12,6 +12,7 @@ class Base{
 
 public:
 
+  // Note that this is not a member function of the base class
   // This is executed when cout << base; is called
   // We happened to define the friend function here along with its declaration
   // we could have totally just declared friend function here and declared somewher else globally

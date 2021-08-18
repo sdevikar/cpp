@@ -13,7 +13,7 @@ int main(void){
   cout << "Constructing C2 by passing C1 object" << endl;
   Complex c2(c1);
 
-  cout << "Constructing C3 by usig = assignment" << endl;
+  cout << "Constructing C3 by using = assignment" << endl;
   Complex c3 = c1;
 
   cout << " Calling PassByValue... expecting copy constructor to be called" << endl;
