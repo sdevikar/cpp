@@ -942,7 +942,7 @@ Where,
 
 - const-cast: To change the const-ness/volatility of variable or expression. Either make a non-const expression const or vice versa. No computational change. `const_cast<type>(expression)`
 - static-cast: Performs a non-polymorphic cast. i.e. it can be performed when you're in a non-polymorphic hierarchy (more on this later). Usually performs computational change. `static_cast<type>(expression)`
-- reinterprete_cast: Almost similar to C style casting. Used to do typecastings between two unrelated types. e.g. pointer to class object and so on. Very risky and should be very sparingly used. `reinterpret_cast<type>(expression)`
+- reinterpret_cast: Almost similar to C style casting. Used to do typecasting between two unrelated types. e.g. pointer to class object and so on. Very risky and should be very sparingly used. `reinterpret_cast<type>(expression)`
 - dynamic_cast: For runtime casting.
 
 #### const_cast:
@@ -1002,7 +1002,65 @@ int *ptr = const_cast<int *>(&j); // this will result in undefined behavior
 
 ```
 
-#### static_cast:
+#### dynamic_cast
+
+- dynamic_cast can be used only with pointers and references to objects. Its purpose is to ensure that the result of the type conversion is a valid complete object of the requested class. e.g. upcasting from the child class to base class
+
+```cpp
+
+class CBase { };
+class CDerived: public CBase { };
+
+CBase b; CBase* pb;
+CDerived d; CDerived* pd;
+
+// this is OK
+pb = dynamic_cast<CBase*>(&d);     // ok: derived-to-base
+
+// this results in compilation error
+pd = dynamic_cast<CDerived*>(&b);  // wrong: base-to-derived
+
+```
+
+- When a class is polymorphic, dynamic_cast performs a special checking during runtime to ensure that the expression yields a valid complete object of the requested class:
+
+```cpp
+// dynamic_cast
+#include <iostream>
+#include <exception>
+using namespace std;
+
+// CBase is a polymorphic class because of the virtual function
+class CBase { virtual void dummy() {} };
+class CDerived: public CBase { int a; };
+
+int main () {
+  try {
+
+    // notice here that both class pointers are if type CBase
+    CBase * pba = new CDerived;
+    CBase * pbb = new CBase;
+    CDerived * pd;
+
+    // cast derived class object pointed to by base class pointer type to derived type pointer
+    // this is OK
+    pd = dynamic_cast<CDerived*>(pba);
+    if (pd==0) cout << "Null pointer on first type-cast" << endl;
+
+    // cast base class object pointer to by base class pointer type ro derived type pointer
+    // this is NOT OK
+    pd = dynamic_cast<CDerived*>(pbb);
+    if (pd==0) cout << "Null pointer on second type-cast" << endl;
+
+  } catch (exception& e) {cout << "Exception: " << e.what();}
+  return 0;
+}
+```
+
+- When dynamic_cast cannot cast a pointer because it is not a complete object of the required class -as in the second conversion in the previous example- it returns a null pointer to indicate the failure
+- If dynamic_cast is used to convert to a reference type and the conversion is not possible, an exception of type bad_cast is thrown instead.
+
+#### static_cast
 
 - cast that can be decided at static (compile) time
   - Allows for all conversions that are allowed implicitly. e.g. int, floats, void pointers to specific types etc.
@@ -1013,7 +1071,43 @@ int *ptr = const_cast<int *>(&j); // this will result in undefined behavior
     - enum class value to integers
     - convert any type of void
 
-## Placeholder for rest of the casting types
+```cpp
+
+class CBase {};
+class CDerived: public CBase {};
+CBase * a = new CBase;
+
+// this is syntactically valid, but WRONG
+// will result in runtime error but no compile time error is thrown
+CDerived * b = static_cast<CDerived*>(a);
+
+```
+
+#### reinterpet cast
+
+- reinterpret_cast converts any pointer type to any other pointer type, even of unrelated classes. The operation result is a simple binary copy of the value from one pointer to the other. All pointer conversions are allowed: neither the content pointed nor the pointer type itself is checked.
+
+- It can also cast pointers to or from integer types. The format in which this integer value represents a pointer is platform-specific. The only guarantee is that a pointer cast to an integer type large enough to fully contain it, is granted to be able to be cast back to a valid pointer. i.e. let's say we have a system that has 4 byte memory addresses and we have an address that we casted to a 4 byte integer and then that 4 byte integer to casted back to pointer, it'll be a valid pointer
+
+```cpp
+class A {};
+class B {};
+A * a = new A;
+
+// this is valid, but wrong
+// this is allowed by reinterpret_cast
+// but will result in error with static_cast
+B * b = reinterpret_cast<B*>(a);
+```
+
+### Typecasting summary
+
+| type of cast     | used for                                             | safety checking |
+| :--------------- | :--------------------------------------------------- | :-------------- |
+| dynamic_cast     | pointers and reference to object polymorphic classes | yes             |
+| static_cast      | native datatypes and pointers of related types       | no              |
+| reinterpret_cast | any pointer to any pointer                           | user            |
+| const_cast       | const to non const and vice versa                    | compiler        |
 
 ## Placeholder for exceptions
 
