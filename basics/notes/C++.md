@@ -293,6 +293,18 @@ Complex comp2 = comp;
 Complex::Complex(const Complex &);
 ```
 
+Note here that even if we're doing assignment in case4 using `=` operator, we're constructing a new object here, hence the copy constructor is invoked. This is different from copying one existing object to another existing object. i.e. if we do something like the following, `=operator` will be invoked
+
+```cpp
+// invocation of = operator
+Complex c1(2,3);
+Complex c2(4,5);
+
+// = operator is invoked here instead of copy constructor
+// because we're not constructing anything
+c2=c1
+```
+
 - Apart from case#3 and case#4, copy constructors are invoked whenever there is
   copying of object involved. This includes passing object by value to a function
 
@@ -431,7 +443,7 @@ void MyMethod() const { // notice the use of const before curly brace
 
 - Associated with class and not the member
 - Shared by all objects of the class
-- Need to be defined outside the class scope and initialized in the source file (more on this later)
+- Need to be _defined_ outside the class scope and initialized in the source file (more on this later). Can be declared within the class scope
 - Can be public or private
 - Virtually eliminates the need for global variables
 
@@ -451,7 +463,7 @@ class MyClass{
 public:
   static int mydatamember; // this is just a declaration
 
-public:
+private:
   static int myprivatedatamember; // this is just a declaration
 };
 
@@ -829,17 +841,17 @@ Both classes B and D above will have their own virtual function table
 - Now, in case of static binding, this is how the calls are compiled:
 
 ```cpp
-
+// static binding happens because f() is non virtual
 B b;
 D d;
 
 B *p = &b;
-b.f(); // this translates to B::f(&b)
-p->f(); // this translates to B::f(p)
+b.f(); // this translates to B::f(&b) i.e. copy constructor invoked
+p->f(); // this translates to B::f(p) i.e. f gets pointer to b
 
 B *p = &d;
 d.f(); // this translates to D::f(&d)
-p->f(); // this translates to D::f(p)
+p->f(); // this translates to B::f(p), since pointer was constructed using B (static binding)
 
 ```
 
@@ -851,9 +863,9 @@ p->f(); // this translates to D::f(p)
 | B     | B::g(B \*const) |
 | D     | D::g(D \*const) |
 
-However, for f() table looks like this, f being non-virtual
+However, for f() table looks like this, f being non-virtual. i.e. both classes get the base class pointer for a non virtual function
 
-| Class | VFT entry for g      |
+| Class | VFT entry for f      |
 | :---- | :------------------- |
 | B     | B::f(B \*const, int) |
 | D     | D::f(B \*const, int) |

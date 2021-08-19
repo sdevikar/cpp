@@ -4,7 +4,8 @@ using namespace std;
 
 class Complex{
 
-private:
+// private:
+public: //should be private but made public for convenience
 
   int re;
   int im;
@@ -31,14 +32,14 @@ public:
   Complex operator+(const int z){
     cout << "Operator + called - #2" << endl;
     Complex d(z,0); // create a new complex number with 0 imaginary part
-    Complex result = d + comp; // this will call the + operator defined above
+    Complex result = d + *this; // this will call the + operator defined above
     return result;
   }
 
   // this will account for n+ complex_number
   // this is not a member function of the class
   // but a friend function can be *defined* within the class if desired
-  // here, even though re and im are private members of Complex class,
+  // here, even if/though re and im are private members of Complex class,
   // because operator+ is a friend function, we can directly access these members
   friend Complex operator+(const int z, const Complex& comp){
     cout << "Operator + called - #3" << endl;

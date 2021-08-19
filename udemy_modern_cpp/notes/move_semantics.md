@@ -17,7 +17,7 @@ int l1 = 10; // l1 is lvalue
 int& rl1 = l1; // rl1 is reference to lvalue that is l1
 
 // doubleit function doubles the x and returns its reference
-int& doubleit(int x){
+int& doubleit(int& x){
    x = 2*x;
    return x;
 }
@@ -82,10 +82,10 @@ int main(void){
 There are two ways to copy one object to the other:
 
 - copy: this is done using copy constructor for example, where the binary footprint on one object is copied byte by byte to the other object. This "deep copy" can be expensive.
-- move: when we know that the result of an expression is temporary or intermediate there's no real reason to copy that result when someone outside the scope of the expression is consuming it. e.g. let's say we have a function that returns a vector by value. At the calling location of this function, this vector will ve entirely copied, while the vector returned by the function is destroyed. It would be much more efficient if we could reuse i.e. move this temporary vector that's returned by a function. Move semantics allows for exactly this.
+- move: when we know that the result of an expression is temporary or intermediate there's no real reason to copy that result when someone outside the scope of the expression is consuming it. e.g. let's say we have a function that returns a vector by value. At the calling location of this function, this vector will be entirely copied, while the vector returned by the function is destroyed. It would be much more efficient if we could reuse i.e. move this temporary vector that's returned by a function. Move semantics allows for exactly this.
   In order to distinguish between when copy should be used vs when move should be used, compiler needs some way to figure out what is temporary value from an expression and what's lvalue. The overloading that is allowed based on lvalue and r value is exactly what we need to achieve that sort of detection.
 
-- rvalue binding allows for a constructor to detect rvalue arguments and does the right thing behind the scenes. e.g. Let's say we have two object of type T, `obj1` and `obj2`, that can be constructed with an rvalue. e.g. `Integer(3)`. Let's say `obj1` has a pointer that's pointing to some rvalue in memory. When we do `T obj2(obj1)` we call the copy constructor and a shallow copy happens, where pointer in `obj2` might now be left dangling if `obj1` is destroyed behind the scenes.
+- rvalue binding allows for a constructor to detect rvalue arguments and does the right thing behind the scenes. e.g. Let's say we have two objects of type T, `obj1` and `obj2`, that can be constructed with an rvalue. e.g. `Integer(3)`. Let's say `obj1` has a pointer that's pointing to some rvalue in memory. When we do `T obj2(obj1)` we call the copy constructor and a shallow copy happens, where pointer in `obj2` might now be left dangling if `obj1` is destroyed behind the scenes.
 
 But with move semantics, we have the possibility of binding based on rvalue or lvale. So we define another copy constructor that accepts rvalue reference. This constructor is called move constructor and the signature is the folowing:
 
@@ -147,16 +147,18 @@ int main(void){
 ```
 
 Copy constructor can get expensive and especially in cases like above, if we have no use of object `a`, it's better to just "move" the data, using move constructor. But because `a` in the above case is an `lvalue`, the call `b(a)` will always bind to copy constructor and not move constructor, even if we provide the move constructor.
-So, in such a case, how do we invoke move constructor instea?
+So, in such a case, how do we invoke move constructor instead?
 
 One way to invoke move constructor is to cast a to rvalue as such:
 
 ```cpp
 Integer b{static_cast<Integer&&>(a)}
 ```
+
 But in the above code, it's not really clear what's going on.
 
 To do the same thing, C++ provides `std::move` function. So, we can write the same thing as below:
+
 ```cpp
 Integer b{std::move(a)}
 ```
@@ -164,6 +166,6 @@ Integer b{std::move(a)}
 Note that once the object is moved, we should not read from it, because it's in unspecified state. Maybe because it's probably been manipulated, modified, destroyed and so on by the object to which it was moved.
 However, it is possible to reinitialize it. As such the internal implementation of the object itself will have to support reinitialization, by let's say allocating new memory and so on.
 
-std::move is also useful for moving non copyable objects. For example, thred, unique pointer, filestream, etc. 
+`std::move` is also useful for moving non copyable objects. For example, thread, unique pointer, filestream, etc.
 
-Also note that std::move doesn't do anything for primitive data types since they do not have any underlying resources.
+Also note that `std::move` doesn't do anything for primitive data types since they do not have any underlying resources.
