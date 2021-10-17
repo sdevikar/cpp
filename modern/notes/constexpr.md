@@ -56,7 +56,7 @@ compiletimeAdd(k,9);
 
 ## const and constexpr differences
 
-- const initialization can be deferred until runtine (think initializer lists for example). But for constexpr, the evaluation must happen at compile time
+- const initialization can be deferred until runtime (think initializer lists for example). But for constexpr, the evaluation must happen at compile time
 - In that sense, const is a subset of constexpr. i.e. all constexpr variables are const but not the other way round
 - We should use const to indicate immutability
 - We should use constexpr to indicate evaluation at compile time

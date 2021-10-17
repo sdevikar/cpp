@@ -2,11 +2,10 @@
 
 ## lvalues and rvalues
 
-- anything that can appear to the left side of the expression is lvalue. e.g. in `x = 10` `x` is lvalue
+- in general, anything that can appear to the left side of the expression is lvalue. e.g. in `x = 10` `x` is lvalue. More specifically, anything that can be referred to, by a name, is lvalue
 - anything that can only appear to the right side of the expression is rvalue. e.g. in the above case, `10` is rvalue
-- A function in C++ can return by value or reference. The function that returns by value is returning an rvalue and the function that returns by reference is returning an lvalue. So, that function can appear on the left hand side of the expression
+- A function in C++ can return by value or reference. (see [return by value and reference](../../basics/examples/return_by_reference/return_by_value_and_reference.cpp)). The function that returns by value is returning an rvalue and the function that returns by reference is returning an lvalue. So, that function can appear on the left hand side of the expression
 - C++11 introduced rvalue references. These are the references to rvalues. Following are some examples of how rvalue reference works:
--
 
 ```cpp
 
@@ -83,9 +82,9 @@ There are two ways to copy one object to the other:
 
 - copy: this is done using copy constructor for example, where the binary footprint on one object is copied byte by byte to the other object. This "deep copy" can be expensive.
 - move: when we know that the result of an expression is temporary or intermediate there's no real reason to copy that result when someone outside the scope of the expression is consuming it. e.g. let's say we have a function that returns a vector by value. At the calling location of this function, this vector will be entirely copied, while the vector returned by the function is destroyed. It would be much more efficient if we could reuse i.e. move this temporary vector that's returned by a function. Move semantics allows for exactly this.
-  In order to distinguish between when copy should be used vs when move should be used, compiler needs some way to figure out what is temporary value from an expression and what's lvalue. The overloading that is allowed based on lvalue and r value is exactly what we need to achieve that sort of detection.
+In order to distinguish between when copy should be used vs when move should be used, compiler needs some way to figure out what is temporary value from an expression and what's lvalue. The overloading that is allowed based on lvalue and r value is exactly what we need to achieve that sort of detection.
 
-- rvalue binding allows for a constructor to detect rvalue arguments and does the right thing behind the scenes. e.g. Let's say we have two objects of type T, `obj1` and `obj2`, that can be constructed with an rvalue. e.g. `Integer(3)`. Let's say `obj1` has a pointer that's pointing to some rvalue in memory. When we do `T obj2(obj1)` we call the copy constructor and a shallow copy happens, where pointer in `obj2` might now be left dangling if `obj1` is destroyed behind the scenes.
+rvalue binding allows for a constructor to detect rvalue arguments and does the right thing behind the scenes. e.g. Let's say we have two objects of type T, `obj1` and `obj2`, that can be constructed with an rvalue. e.g. `Integer(3)`. Let's say `obj1` has a pointer that's pointing to some rvalue in memory. When we do `T obj2(obj1)` we call the copy constructor and a shallow copy happens, where pointer in `obj2` might now be left dangling if `obj1` is destroyed behind the scenes.
 
 But with move semantics, we have the possibility of binding based on rvalue or lvale. So we define another copy constructor that accepts rvalue reference. This constructor is called move constructor and the signature is the folowing:
 
@@ -96,8 +95,8 @@ T(const T&& x)
 
 In this constructor:
 
-- we shallow copy obj1's pointer, so it points to the same value in the memory
-- we set obj1's pointer to null pointer
+- we shallow copy `obj1`'s pointer, so it points to the same value in the memory
+- we set `obj1` 's pointer to null pointer
 
 When obj1's destroyed, it's destructor will call delete on null pointer and thus nothing happens to the value at the pointer and we have essentially stolen resource from obj1 and moved to obj2.
 

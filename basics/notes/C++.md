@@ -1,4 +1,4 @@
-# C++ basic concepts:
+# C++ basic concepts
 
 ## Prefer const over #define
 
@@ -7,7 +7,7 @@
 - We can define const anywhere in the program versus a #define which has to be
   defined at the top of the file
 
-# inline functions
+## inline functions
 
 - We can use #defines for defining simple operations and calculations. e.g.
 
@@ -17,7 +17,7 @@
 
 But the above is dangerous because `SQUARE(a+1)` will expand as follows:
 
-```
+```cpp
 a + 1 * a + 1
 ```
 
@@ -29,7 +29,7 @@ The above will follow the rules of precedence and the result will be not as expe
 - Inline functions can not be recursive either
 - For inline function, the body also needs to be in the header
 
-# Pointer vs Reference
+## Pointer vs Reference
 
 - Reference is simply a synonym/alias for an existing variable. e.g.
 
@@ -57,7 +57,7 @@ int &z = y; //ERROR - this is not allowed
 
 - One advantage of pointers is that it comes with a facility of operations that can be performed on it. e.g. on a 32 bit machine, incrementing a pointer by 1 will make it point to the current address + 4. Whereas for references, these operators like ++, -- etc are meaningless. Because these operators are interpreted as operations being performed on the original referent. i.e in above example, &z is interpreted as alias of x.
 
-# Function overloading:
+## Function overloading
 
 - Allows for reuse of function name but with a different number or different types of parameters
 - Binding happens at compile time. i.e. the decision regarding which function to call among the functions with the same name, happens at compile time
@@ -75,7 +75,7 @@ void myfunc(double a, double b=3.3); //function2
 
 And then we go ahead and call the function as below:
 
-```
+```cpp
 myfunc(5.6);
 ```
 
@@ -120,7 +120,7 @@ int f(int x = 0); // it is important to know here that this function is really 2
 int z = f(); // this will result in an error because of function 2 can be interpreted as declaration 2
 ```
 
-# Operator overloading:
+## Operator overloading
 
 - Has to do with assigning new behavior to the operators like +, -, = and so on
 - If we think about it, operators are pretty similar to functions. In the sense
@@ -135,7 +135,7 @@ int z = f(); // this will result in an error because of function 2 can be interp
 - C++ provides a way to associate a function with a particular operator. This is facilitated by keyword `operator`
 - The syntax for this is `operator<operator_name>(arguments)`
 
-## Operator overloading rules:
+## Operator overloading rules
 
 - You cannot invent your own operators. e.g. you cannot define \*\* as an operator and define it's operation logic
 - You cannot change intrinsic properties of an operator. Intrinsic properties include:
@@ -167,7 +167,7 @@ int z = f(); // this will result in an error because of function 2 can be interp
   - You're allowed to override operators like &&, || etc. But we need to understand that these operators will lose their special properties after we override them. The special properties being - short circuit evaluation. e.g. in false && expression, expression will never get evaluated because no matter what the output of the expression is, result of && is going to be false. This is called short circuit evaluation
   - operator -> can be overloaded, but must return a raw pointer or return an object (by value or reference)
 
-# Memory management
+## Memory management
 
 - C++ provides a shortcut alternative to malloc, calloc etc. It's called the operator `new`
 - With operator new, you can dynamically allocate memory to a datatype and initialize as below:
@@ -200,7 +200,7 @@ delete [] b;
 
 - Since new and delete are operators, we can override them or call them using their full names
 
-```
+```cpp
 int *p3 = (int *) operator new(sizeof(int));
 ```
 
@@ -212,7 +212,7 @@ In summary, new operator takes 3 forms. new, new[] and new(). First two forms mu
 | operator new[] | delete[] |
 | operator new() | No delete |
 
-# C++ classes
+## C++ classes
 
 - Two _main_ types of access specifiers
 - Public and private (we'll talk about protected later)
@@ -220,26 +220,26 @@ In summary, new operator takes 3 forms. new, new[] and new(). First two forms mu
 - In general, properties (i.e. data members) of the class are associated with its state. So we prefer to keep the properties private
 - The methods of the class are usually associated with changing these properties. So we sometimes need to keep the methods public
 
-## Constructor:
+### Constructor
 
 - A special function, that bears the same name as the class name
 - Can be overridden
 - Default constructor is a constructor with no parameters: This is automatically provided by C++ compiler
 - Default constructor is automatically called when the object of class is created
 
-## Destructor:
+### Destructor
 
 - Counterpart of Constructor
 - Only one type of destructor - i.e. destructor with no parameters and no return value
 - Destructor is automatically called when the class object goes out of scope. We'll demonstrate this with an example
 
-## Initializer lists:
+### Initializer lists
 
 - This is a way to initialize class properties with the help of values or expressions
 - Same as assigning values to individual properties inside the constructor, but with a slight difference (discussed later)
 - Initializations done using initializer lists are invoked in an order in which the class members are defined in the class definition and not by the order in which initializations appear in initializer list.
 
-## Destructor
+### Destructor
 
 - Special function that gets called on the object, when that object goes out of scope
 - Has no return value
@@ -264,7 +264,7 @@ In the above case,
 - Destructor of ClassB will be called first
 - Destructor of ClassA will be called next
 
-## Copy Constructor
+### Copy Constructor
 
 - We have instantiated Complex class object the following ways:
 
@@ -362,7 +362,7 @@ MyClass(MyClass myclass);
   More on this later.
 - The most important point to remember is that the default copy constructor does a _shallow copy_
 
-## Copy assignment operator:
+### Copy assignment operator
 
 - Consider the following lines of code:
 
@@ -391,7 +391,7 @@ c1 = c2 = c3; // chain assignment
 - The above is equivalent to `c1 = (c2=c3)`. Unless the expression `c2=c3` doesn't return Complex& type, `c1 = <expression>` will not work.
 - There is a caveat in copy assignment operator. The caveat being, we always want to check if the object being copied is the same as current object. This is to make sure that we're not trying to write freed memory, that we may have freed, before executing the logic inside copy operator to avoid memory leak
 
-## Const objects:
+### Const objects
 
 - You can create const objects for classes like so:
 
@@ -428,7 +428,7 @@ void MyMethod() const { // notice the use of const before curly brace
 - A non constant object can invoke a constant function above
 - In summary, a constant object can only invoke a constant function. A non constant object can invoke both kinds of methods
 
-### Mutable data members:
+### Mutable data members
 
 - We learned earlier that:
   - We cannot modify const data members no matter what
@@ -439,7 +439,7 @@ void MyMethod() const { // notice the use of const before curly brace
 - static data members cannot be declared as mutable either
 - const data members obviously can't be declared as mutable
 
-# Static data members
+### Static data members
 
 - Associated with class and not the member
 - Shared by all objects of the class
@@ -447,7 +447,7 @@ void MyMethod() const { // notice the use of const before curly brace
 - Can be public or private
 - Virtually eliminates the need for global variables
 
-## Static data member initialization:
+#### Static data member initialization
 
 The initialization of static data member doesn't happen the same way as a normal instance data member.
 When we create an instance of a class, the memory for all the instance (non-static) data members get allocated.
@@ -476,7 +476,7 @@ int main void(){
 
 ```
 
-# Static function
+### Static function
 
 - Similar to static data members, these are per-class functions
 - Since they are per-class, they do not have _this_ pointer
@@ -486,18 +486,18 @@ int main void(){
 - Static member function cannot share a name with non static member function
 - Static member function can't be a const function either - this is because const function need const this pointer and as said earlier, static functions don't have a this pointer
 
-## The linker error issue:
+## The linker error issue
 
 - If the private static data member is not initialized in the application globally, we will get the linker error
 - This is because, up to the point the static data member is _defined_, the space was never allocated for it by the compiler, during the object creation
 
-# Friend function
+## Friend function
 
 - A function that can access private and protected members of a class
 - The function is defined outside the class scope and only _declared_ as a "friend" function within the class scope
 - By _outside the class scope_ we mean a function that is defined outside in global scope, or within a _different class_, or it could be a function template (more on this later)
 
-## Why not just provide public APIs in a class?
+### Why not just provide public APIs in a class?
 
 - It may seem that friend function is a loophole in encapsulation but...
 - Using friend function, we have the ability to control who has access to private members of the class.
@@ -507,17 +507,17 @@ int main void(){
 - See the answers to this question: https://stackoverflow.com/questions/17434/when-should-you-use-friend-in-c#
 - As per the video lecture, there are some operators (like streaming operators), that are very hard to overload. In this case, the friend concept is useful
 
-# Friend Class
+## Friend Class
 
 - Same as friend function, but for a class. A class (A) declared to be the friend of class (B), will have access to the private and protected functions of class B.
 - This means, all functions in class A, will be able to access private and protected members of class B
 - A friend class can be a simple class (like class A) or a template class (more on this later)
 
-## Some properties of friend class:
+### Some properties of friend class
 
 - A is a friend of B doesn't mean B is a friend of A - i.e. this relationship is non-associative
 
-# Operator overloading for User Defined Datatypes:
+## Operator overloading for User Defined Datatypes
 
 - We have seen already that operator overloading is simply a special type of function, with the operator as the invoking function name and the operands being its arguments. e.g.
 
@@ -533,7 +533,7 @@ a.operator+(b);
 - We also need to be careful about overriding = operator for user defined datatypes and realize that it will be required wherever allocation of memory using `new` operator is involved. Because if we don't, compiler provides a default = operator that does only shallow copy and this could result in unexpected behavior. In general, if constructor uses operator `new`, = operator should be overloaded
 - Study specific case of pre and post increment operator and how it's implemented in the examples
 
-## Doing more with operator overloading:
+## Doing more with operator overloading
 
 - We studied a simple example of Complex class where we overrode the `+` operator to add two complex numbers. We also studied that we can override the operator in global space or in class scope as a member function. When we use global scope though, we're basically violating the encapsulation of private data members and thus this approach is not always practical.
 - Another thing worth noticing is that, the overriding that we did for `+` operator was not flexible. e.g. if we were to add a complex number and a real number like so: `(3 + i4) + 5` what we defined is not sufficient and we'll have to define additional overloaded methods for `+` operator. e.g.
@@ -546,7 +546,7 @@ Complex operator+(int r, const Complex& comp); // this will take care of 5+(3 + 
 - Note above that operator+ takes two arguments. Which means, the only option we have is to either have operator+ be overridden and as a friend function or do a global override. Particularly in the second case above, if we do `5+(3 + i4)`, for a member operator+ function within class scope, it'll be translated to 5.(complex_number_instance_for_3+i4) and this is invalid
 - The solution to the above is still using a global function for operator overload, but then define it as a friend function, so it can access private data members of the class.
 
-## IO operations:
+## IO operations
 
 - IO operations are the operations that you do when e.g. you're reading/writing from/to a stream/file etc. e.g. we want to be able to do something like:
 
@@ -581,18 +581,18 @@ ostream& operator<<(ostream &os, const Complex& c1){
   - ostream/istream argument is not const in any signature, because it is ostream that we're modifying
   - in overriding both, ostream and istream, we'd return reference to original ostream and istream to achieve chaining of << and/or >>
 
-## When to use what kind of operator overloading:
+## When to use what kind of operator overloading
 
 - Use global overloading when encapsulation is not a concern. e.g. if you're simply trying to override an operator for a structure that wraps some primitive datatypes, pointers etc.
 - Use member function when left operand (first argument) is guaranteed to be a class within which, the operator is overloaded. e.g. complexobj + realnumber. This translates to `complexobj.operator+(int realnumber)` and thus, to the operator+, the left operand is always the class object.
 - In majority of cases, use friend function for overloading the operators.
 
-## Some other considerations:
+### Some other considerations
 
 - Consider effect of casting (more on this later)
 - Do it only when necessary
 
-# Namespaces
+## Namespaces
 
 - Namespaces are open. i.e. if you have defined a namespace before and added few things to it, you can later define some more elements to that namespace somewhere else.
   e.g.
@@ -618,7 +618,7 @@ mynamespace::y = 10;
 - There can be unnamed namespaces, just to segregate certain symbols. This is just another encapsulation technique, where only the symbols within the same namespace can see each other and interact with each other.
 - Just as a sidenote, global scope symbols can be identified using '::' operator. e.g. ::var means var is in global scope
 
-# Inheritance
+## Inheritance
 
 - Has to do with IS A relationship. e.g. Civic is a car
 - As such IS A relationship has to do with specialization/generalization. Civic is specialization and car is a generalization.
@@ -641,7 +641,7 @@ class SoftwareEngineer : public Engineer; // Engineer is a base class here, whic
 
 ```
 
-## Some properties of IS A relationship
+### Some properties of IS A relationship
 
 - Derived class _inherits_ all data members of base class
 - Derived class may add its own data Members
@@ -653,13 +653,13 @@ class SoftwareEngineer : public Engineer; // Engineer is a base class here, whic
 - Constructor of derived class must first call the constructor of base class to construct the base class instance of the derived class. i.e. derived class first constructs base class and then itself.
 - Destructor of derived class calls destructor of the base class instance of the derived class. i.e. derived class constructs and owns base class instance, keeps it and then destroys it, when it is destroying itself
 
-## Access specification:
+### Access specification
 
 - Derived class can't access _private_ member of the base class.
 - However, derived class can access the _protected_ members of the base class.
   - Keep in mind that protected members can ONLY be accessed using base class instance. For example:
 
-```
+```cpp
 class Base{
 protected:
   int m_BaseX;
@@ -681,7 +681,7 @@ int main(void){
 }
 ```
 
-## Friend functions and automatic casting:
+## Friend functions and automatic casting
 
 - Suppose you have a public friend function declared and defined in the base class:
   - This friend function will have access to the private members of the base class
@@ -690,7 +690,7 @@ int main(void){
   - When we call this friend function on child class object and assuming child class hasn't overridden this function, this will be deemed as a simple case of inherited function and base class friend function will be called.
   - The point to be noted here, is that, even though, the function call is on child instance, the call goes on base class instance. This is possible because the instance of the base class is included in the child class. And the child class is automatically casted to base class. This is known as **implicit casting**
 
-## Constructor and destructor:
+## Constructor and destructor
 
 - As we discussed before, the child class has an instance of base class. So, naturally the child class will need access to the constructor and destructor of the base class. So, child class INHERITS the constructor and destructor of the base class. HOWEVER, the **inheritance semantics are different.**
 - In particular, child class cannot override the base class constructor and destructors.
@@ -712,14 +712,14 @@ The fact that every class object with IS A relationship with base class holds an
 This is true for private inheritance as well, BUT, in private inheritance, THERE IS NO IS A RELATIONSHIP
 So, in effect, with private inheritance. we're creating an effect of composition
 
-## Inheritance and visibility:
+## Inheritance and visibility
 
 - This has to do with what happens to the visibility of a member of a base class when it is inherited by the child class
 - The simple answer is, two of the more restrictive visibility will be applied.
   - e.g.#1 child class publicly inherits base class. In this case, base class's private members will remain private, public will remain public in child class.
   - e.g.#2 child class privately inherits base class. In this case, public member of base class will become private in child class (i.e. child class cannot access the public members of base class directly using . operator)
 
-# Casting
+## Casting
 
 - Implicit casting occurs when compiler knows how to convert one datatype to the other. Conversions that lead to data loss are done with compiler warning
 
@@ -938,14 +938,14 @@ Where,
 - cast: keyword specifying what type of casting is being done
 - This kind of casting can be done statically or dynamically in C++
 
-### Types of cast operators:
+### Types of cast operators
 
 - const-cast: To change the const-ness/volatility of variable or expression. Either make a non-const expression const or vice versa. No computational change. `const_cast<type>(expression)`
 - static-cast: Performs a non-polymorphic cast. i.e. it can be performed when you're in a non-polymorphic hierarchy (more on this later). Usually performs computational change. `static_cast<type>(expression)`
 - reinterpret_cast: Almost similar to C style casting. Used to do typecasting between two unrelated types. e.g. pointer to class object and so on. Very risky and should be very sparingly used. `reinterpret_cast<type>(expression)`
 - dynamic_cast: For runtime casting.
 
-#### const_cast:
+#### const_cast
 
 - This casting type reinterprets the const-ness of an expression. Here's a simple example:
 
@@ -1191,7 +1191,7 @@ double maxval = max(a, c);
   - Qualification coversions. e.g. using non-const value in place of a const value etc.
   - Conversion to base class instantiation
 
-### User defined data types in templates:
+### User defined data types in templates
 
 Templates work the same way for user defined classes / datatypes. The only requirements is that the datatype must support the requirements of the "algorithm" that the template function is implementing. e.g. in our max function, the algorithm is to compare two parameters and return the greater of the two. For this comparison, an operator `>` is used.
 
@@ -1210,7 +1210,7 @@ class Complex {
 };
 ```
 
-### Overloading a template function:
+### Overloading a template function
 
 - Template functions can in turn be overloaded with other template functions. e.g. with different number of parameters:
 
@@ -1262,7 +1262,7 @@ func(T x){
 }
 ```
 
-## Class templates:
+## Class templates
 
 - Exact same concept as function template. i.e. we can parameterize the construction of the class. In case of function templates, we specified the data types of the function arguments at the function call location. In case of class templates we'd do the same, but for the datatype used internally by the class.
 - The syntax remains the same. e.g.
@@ -1313,7 +1313,7 @@ void MyFunction(Stack<int> stackx&); // this declaration is also OK.
 
 ```
 
-### Default class templates:
+### Default class templates
 
 - We can have default datatypes for the template class. For example:
 
@@ -1334,7 +1334,7 @@ Records <float>rs3;
 //etc.
 ```
 
-## Class template specialization:
+## Class template specialization
 
 - Remember the char* specialization of template function from before. It's the same concept here. i.e. if we want to provide explicit implementation for some datatype for a template class, we can. e.g. let's specialize the above class Records for char*.
 
