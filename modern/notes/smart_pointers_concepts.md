@@ -32,7 +32,6 @@ Here, the delete will not execute if x = 0 and there will be a memory leak.
 
 The classes have a destructor that gets called automatically when they go out of scope. This is the idea behind smart pointers. We can wrap a pointer inside a class and when the class goes out of scope, delete the pointer. This is also known as the _RAII (Resource Acquisition is Initialization)_
 
-
 ## First attempt
 
 The code for the smart pointer discussed above could look like this:
@@ -88,7 +87,7 @@ Here, the `Auto_ptr1` is the smart pointer that wraps the `Resource`. Notice abo
 
 - `m_ptr` points to the instance of `Resource`
 - `m_ptr` is deleted when the destructor of `Auto_ptr1` is called
-- `dereference` and `->` operators are overloaded to operate of the `m_ptr` 
+- `dereference` and `->` operators are overloaded to operate of the `m_ptr`
 
 This should work because no matter what, the destructor of `m_ptr` will always be called and there's no way for others to access the instance of resource that was passed to the `Auto_ptr1`, so nobody can invalidate it.
 
@@ -108,7 +107,7 @@ int main()
 }
 ```
 
-Here, the sequence of operation is: 1. constructor of `Auto_ptr1` is called 2. copy constructor of `Auto_ptr2` is called - at this point, a shallow copy will happen 3. destructor of `Auto_ptr2` and `Auto_ptr1` is called. 
+Here, the sequence of operation is: 1. constructor of `Auto_ptr1` is called 2. copy constructor of `Auto_ptr2` is called - at this point, a shallow copy will happen 3. destructor of `Auto_ptr2` and `Auto_ptr1` is called.
 Since both destructors call the delete on the same pointer, the program will crash.
 
 We could mark the assignment operator and copy constructor for deletion, that way compiler won't generate them and `Auto_ptr1<Resource> res2(res1)` won't work unless explicitly defined. Just deleting and preventing assignment and copy is not a good idea because we won't be able to return the `Auto_ptr1` from a function, for example. i.e. the following won't work.
@@ -158,11 +157,19 @@ Auto_ptr2& operator=(Auto_ptr2& a) // note: not const
 
 In the above code, the takeway is that the pointer to the resource owned by the input arg `a` gets invalidated after the pointer itself got copied to the new owner.
 
-
 ## c++ auto_ptr
 
 The above move semantics implementation is what the C++ std::auto_ptr (in C++98, 11 & 14) once did, until it got discontinued in C++17. The above implementation has a number of problems on its own. e.g.
 
 - notice we passed `Auto_ptr2& a` to both copy constructor and =operator. This `a` got modified within those functions and `a.m_ptr` was set to null. Now, if you try to access the argument you passed at the calling location, there would be a crash because `a.m_ptr` is now null.
 - auto_ptr also does a simple delete in its destructor. If the `Resource` is an array type, that deletion won't work.
-- auto_ptr will also not work for a lot of standard library containers and algorithms, because those standard library classes assume that when they copy an item, it actually makes a copy, not a move.
+- auto_ptr will also not work for a lot of standard library containers and algorithms, because those standard library classes assume that when they copy an item, it actually makes a copy, not a move
+
+C++11 standard library ships with 4 smart pointer classes:
+
+- std::auto_ptr (as discussed above, you shouldn’t use it and it’s being removed in C++17)
+- std::unique_ptr
+- std::shared_ptr, and
+- std::weak_ptr
+
+Let's see [Unique Pointer](unique_pointer.md) next, which is the most widely used smart pointer.
