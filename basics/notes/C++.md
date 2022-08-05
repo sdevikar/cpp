@@ -1,5 +1,27 @@
 # C++ basic concepts
 
+## Primitive datatypes
+
+- C++ measures datatype length in multiples of `CHAR_BITS` instead of the bytes (which is the length of char in bits and equal to 8 in almost all cases)
+- Regardless of the 32 or 64 bit arch, the _minimum_ length of a char is 8 char bits
+- Length of the rest of the primitive datatypes is defined in multiples of a `char`
+
+| datatype  | 32 bit arch | 64 bit arch |
+| :-------- | :---------- | :---------- |
+| bool      | 1           | 1           |
+| char      | 1           | 1           |
+| int       | 4           | 4           |
+| float     | 4           | 4           |
+| double    | 8           | 8           |
+| long      | 4           | 8           |
+| long-long | 8           | 8           |
+
+Note that there's no difference in the size of char, int, float or double on two architectures.
+The two certain ways to get the size of these datatypes is:
+
+- Use the sizeof(...) operator
+- Use `std::numeric_imits<T>`
+
 ## Prefer const over #define
 
 - Type safety: Because const variable is an actual variable, compiler knows the
@@ -205,12 +227,12 @@ int *p3 = (int *) operator new(sizeof(int));
 ```
 
 In summary, new operator takes 3 forms. new, new[] and new(). First two forms must be paired with corresponding delete and delete[] and last form doesn't require a delete
-| Allocator | De-Allocator|
-| :-------------------| :-----------|
-| malloc | free |
-| operator new | delete |
-| operator new[] | delete[] |
-| operator new() | No delete |
+| Allocator      | De-Allocator |
+| :------------- | :----------- |
+| malloc         | free         |
+| operator new   | delete       |
+| operator new[] | delete[]     |
+| operator new() | No delete    |
 
 ## C++ classes
 
