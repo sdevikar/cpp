@@ -1,7 +1,7 @@
-## Uniform Initialization
+# Uniform Initialization
 
 - Uniform initialization works both for scalar and array types. We can use `{}` type initialization for all types.
-- In C++98, there were two different ways of initialization depending on whether the data type is premitive. e.g.
+- In C++98, there were two different ways of initialization depending on whether the data type is primitive. e.g.
 
 ```cpp
 
@@ -11,7 +11,7 @@
 // 2. direct initialization => T obj{v}
 // 3. copy initialization => T obj = v
 
-// primitive datatype initializtion
+// primitive datatype initialization
 
 int x; // uninitialized
 int y = 10; // copy initialization (avoid it for user defined datatypes and array types)
@@ -22,7 +22,7 @@ int z(10); // direct initialization
 
 char msg1[5]; // uninitialized
 char msg2[5] = {'\0'}; // initialized but null terminated
-char msg3[5] = {'a', 'b', 'c', 'd' , '\0'}; // cpoy initialization / aggregate initialization
+char msg3[5] = {'a', 'b', 'c', 'd' , '\0'}; // copy initialization / aggregate initialization
 char msg4[5] = {"abcd"}; // copy initialization
 ```
 
@@ -35,20 +35,21 @@ char msg4[5] = {"abcd"}; // copy initialization
 int x{}; // x is initialized to default value of 0
 int y{5}; // y is initialized to 5
 
-// array type initilalization on the stack
+// array type initialization on the stack
 
 char d[8]{}; // all elements of array initialized to default value ('\0')
 char msg4[5] = {"abcd"}; // same as previous
 
 
-// array type initilalization on the heap
+// array type initialization on the heap
 
 char* h1 = new[8]{};
 char* h2 = new[8]{"Hello"};
 
 ```
 
-- Additional advantages of uniform initialization 
-    - forces initialization 
-    - prevents narrowing conversion e.g. the following will result in an error or a warning depending on the compiler:
-    `float x{5.0}; int y{x};`
+- Additional advantages of uniform initialization
+
+  - forces initialization
+  - prevents narrowing conversion e.g. the following will result in an error or a warning depending on the compiler:
+    `float x{5.0}; int y{x};` . The `=` assignment could result in automatic conversion and loss of precision.

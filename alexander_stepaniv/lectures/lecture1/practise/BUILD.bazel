@@ -29,3 +29,10 @@ cc_binary(
         "table_util.h",
     ],
 )
+
+cc_binary(
+    name = "unique_elements",
+    srcs = [
+        "unique_elements.cpp",
+    ],
+)
