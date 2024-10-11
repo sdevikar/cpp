@@ -20,47 +20,32 @@ void count_operations(size_t i, size_t j, Function fun, double (*norm)(double, d
 // measure operations on an interval of a given length 
 // ranging from i to j and going through i, 2i, 4i, ... up to and including j
 
-  // used as a size of decimals array
-  // reprensents how many operations are we supporting: construction, destruction, copy etc.
   size_t cols = instrumented<double>::number_ops;
  
-
   size_t decimals[cols];
-
-  // creating an integer with initial value either 0 or 2
   size_t normalized((norm == dont_normalize) ? 0 : 2);
-  
-  // decimals[0] = 0
   *decimals = 0;
-
-  // fill the decimals array: decimals[1] = normalized... decimals[cols] = normalized
   std::fill(decimals + 1, decimals + cols, normalized);
   
   table_util table;
   table.print_headers(instrumented<double>::counter_names, instrumented<double>::number_ops, 12); 
  
-  // this loop will run starting from i, i*2, i*4 ...
   while (i <= j) {
    
-    // create a vector with size i
-    // each iteration will create a vector of size = i, i*2, i*4...
+    // vector of size 16,32,64, etc will be constructed
     std::vector<instrumented<double> > vec(i);
-
-    // fill out this vector with increasing values from 0,1,2...i
-    // then shuffle it
-    course::iota(vec.begin(), vec.end(), 0.0);	
+    // vector is populated from 0 to end range
+    course::iota(vec.begin(), vec.end(), 0.0);
+    // vector is shuffled	
     std::random_shuffle(vec.begin(), vec.end());
 
-
+    //results are initialized
     instrumented<double>::initialize(i);
 
-    // now you're passing the vector iterator to the function
-    // which, in this case, is "sort"
-    // sort will do its thing then
+    // function  is called on vector
     fun(vec.begin(), vec.end());
     
-    // read the counts array from instrumented class
-    // this is where you will have to update all the counts
+    // table is printed
     double* count_p = instrumented<double>::counts;
     
     for (size_t k(1); k < cols; ++k) count_p[k] = norm(count_p[k], count_p[0]);

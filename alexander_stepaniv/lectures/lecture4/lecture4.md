@@ -1,22 +1,27 @@
 # Lecture 4 part 1
 
 - [Lecture 4 part 1](#lecture-4-part-1)
+  - [Component programming](#component-programming)
   - [The swap program](#the-swap-program)
+    - [Specialization for unsigned integrals](#specialization-for-unsigned-integrals)
   - [the min function](#the-min-function)
 - [Lecture 4 part 2](#lecture-4-part-2)
   - [Optimizing the min program](#optimizing-the-min-program)
   - [More on the equality](#more-on-the-equality)
 
-- What is a component?
-  - A piece of software that lets you do something in a general way
-  - It has to be functional (i.e. ripping some lines of code out from a program and running them won't qualify those lines as components)
-  - It has to be efficient (as efficient as the logic inside the component was executed without the wrapper)
-- Is C++ the right language for component programming?
-  - There are two factors to consider
-    - Generality: You need to be able to write as generic of a program as you want
-    - Efficiency: The program needs to be efficient
-  - We will determine if these two criteria are met based on three programs:
-    - swap, min and linear search
+## Component programming
+
+A component is a functioning piece of software that solves a problem in a generic way. This way, anyone can take that component and use it.
+For a programming language to support component programming, it needs to satisfy two conditions
+
+1. It should be able to describe a general purpose c component
+2. It should be able to do that without losing efficiency
+
+One way to determine (other than writing an operating system in that language) whether the language is suitable for component programming is to implement the following three programs:
+
+- Swap
+- Min
+- Linear search
 
 ## The swap program
 
@@ -49,14 +54,12 @@ inline void swap(T&a, T&b){
   - Let's say we were using this function to swap containers (e.g. vectors for 1 million elements)
   - This code is super inefficient because:
     - we are constructing a tmp vector of a million elements, then we're copying two vectors of size 1 million twice
-  - So, this solution is very bad for contailers
+  - So, this solution is very bad for containers
   - In case of vectors, there is a pointer to the header, there is a pointer to the position until which the vector is filled and there is a pointer to the end of the vector. So, for swapping, it's sufficient to just change the header pointer
   - More generally, for any container, we should be good with just a couple of things:
     - swap headers of a and b
     - fix back pointers (i.e. if the next element points to the previous element, we will have to deal with that)
-  - Solution: write a specialized template function with specialized signature
-
-- More efficient code: we can use xor algorithm to swap two objects. Although the xor algorithm only works when the two objects are not identical. So, in this case, it makes sense to actually check whether the arguments are identical
+  - Solution: write a specialized template function with specialized signature as below:
 
 ```cpp
 template <typename T>
@@ -67,6 +70,15 @@ void swap(std::vector<T> &a, std::vector<T> &b){
   // (we will do this later)
 }
 ```
+
+Implementation of the code is deferred until vector and other containers are discussed.
+
+### Specialization for unsigned integrals
+
+- Most efficient code: we can use xor algorithm to swap two objects. Although the xor algorithm only works when the two objects are not identical. So, in this case, it makes sense to actually check whether the arguments are identical
+- Also, we can only xor for unsigned integer types (uint8/16/32/64, etc). For signed integrals, xor is undefined
+
+
 
 ## the min function
 

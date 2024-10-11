@@ -32,13 +32,20 @@ void count_operations(size_t i, size_t j, Function fun, double (*norm)(double, d
  
   while (i <= j) {
    
+    // vector of size 16,32,64, etc will be constructed
     std::vector<instrumented<double> > vec(i);
-    course::iota(vec.begin(), vec.end(), 0.0);	
+    // vector is populated from 0 to end range
+    course::iota(vec.begin(), vec.end(), 0.0);
+    // vector is shuffled	
     std::random_shuffle(vec.begin(), vec.end());
 
+    //results are initialized
     instrumented<double>::initialize(i);
+
+    // function  is called on vector
     fun(vec.begin(), vec.end());
     
+    // table is printed
     double* count_p = instrumented<double>::counts;
     
     for (size_t k(1); k < cols; ++k) count_p[k] = norm(count_p[k], count_p[0]);

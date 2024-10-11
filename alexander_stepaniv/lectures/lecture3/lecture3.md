@@ -78,7 +78,7 @@ explicit singleton(const T& x): value(x)
 
 - Background
   - This is the inverse of what we were doing above. Here we have a singleton object made with type T. And we want to in a sense, downcast it to a raw T type.
-  - This kind of conversion is achieve with a conversion operator, `()`
+  - This kind of conversion is achieve with a conversion operator, `T()`
   - Conversion operator is just like any other operator overriding. i.e. it's a function and we define it as: `operator <ReturnValueType>() { // logic of conversion }`
   - Notice that this signature a little different from the regular operator override syntax, where we do something like: `returnType operator operatorSymbol( arguments) { // conversion logic}`
 - With the above is background, we'd write a conversion operator for singleton class as below:
